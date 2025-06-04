@@ -716,7 +716,9 @@
             // IMPORTANT: API Key Management
             // 请替换为你的真实 API Key，这些 Key 务必妥善保管，不应泄露
             const SILICONCLOUD_API_KEY = "sk-nfvdgwtiswofnqmlekvnsufhrjaekjtrwybhdhiuzrwprlcn"; // 你的 SiliconCloud API Key
-            const TIU_GEMINI_API_KEY = "sk-wweGNYPQTc61ifD8PoEQ7ggnfKKSi7jcqxJWcC9JwAhTKVOI"; // tiu.me 的 Gemini 代理 API Key
+            // ** TIU 的 API Key 现在在 Vercel Function 的环境变量中，前端不再需要 **
+            // const TIU_GEMINI_API_KEY = "sk-wweGNYPQTc61ifD8PoEQ7ggnfKKSi7jcqxJWcC9JwAhTKVOI"; 
+
 
             // 模型配置中心
             const chatModelConfigs = {
@@ -740,23 +742,26 @@
                 },
                 international_normal: {
                     name: "普通小八 (国际版)",
-                    baseURL: "https://api.tiu.me/v1",
-                    model: "gemini-2.5-flash-preview-05-20", // Gemini Flash
-                    apiKey: TIU_GEMINI_API_KEY,
-                    isInternal: false, // 代理的国际版
-                    supportsSystemRole: true, // tiu.me 代理支持 system role
-                    endpointSuffix: "/chat/completions"
+                    // ** 关键修改：指向你的 Vercel Function 代理地址 **
+                    baseURL: "/api/gemini-proxy", // 相对路径，会自动指向 https://8ban.uno/api/gemini-proxy
+                    model: "gemini-2.5-flash-preview-05-20", // 模型 ID 将通过代理传递
+                    apiKey: "VERCEL_PROXY_HANDLES_API_KEY", // 前端不需要真实 Key
+                    isInternal: false,
+                    supportsSystemRole: true, // 代理层将处理 system role
+                    endpointSuffix: "" // 代理层已经处理了完整路径，这里不需要后缀
                 },
                 international_inference: {
                     name: "推理小八 (国际版)",
-                    baseURL: "https://api.tiu.me/v1",
-                    model: "gemini-2.5-flash-preview-05-20-thinking", // Gemini Flash Thinking
-                    apiKey: TIU_GEMINI_API_KEY,
-                    isInternal: false, // 代理的国际版
-                    supportsSystemRole: true, // tiu.me 代理支持 system role
-                    endpointSuffix: "/chat/completions"
+                    // ** 关键修改：指向你的 Vercel Function 代理地址 **
+                    baseURL: "/api/gemini-proxy", // 相对路径
+                    model: "gemini-2.5-flash-preview-05-20-thinking", // 模型 ID 将通过代理传递
+                    apiKey: "VERCEL_PROXY_HANDLES_API_KEY", // 前端不需要真实 Key
+                    isInternal: false,
+                    supportsSystemRole: true, // 代理层将处理 system role
+                    endpointSuffix: "" // 代理层已经处理了完整路径，这里不需要后缀
                 }
             };
+
 
             // 当前选中的模型配置
             let currentModelId = 'domestic_normal'; // 默认选中普通小八 (国内版)
@@ -792,66 +797,84 @@
                 });
             }
 
-            /**
+                    /**    
              * 根据当前模型配置发送聊天消息
              * @param {Array} history 当前的对话历史数组 (仅用户和模型的实际对话)
              * @param {object} modelConfig 当前使用的模型配置
              * @returns {Promise<string>} AI 返回的文本
              */
             async function sendChatMessage(history, modelConfig) {
-                // 强制检查 API Key 是否已设置
-                if (modelConfig.apiKey === "YOUR_SILICONCLOUD_API_KEY" || modelConfig.apiKey === "YOUR_TIU_GEMINI_API_KEY") {
+                // 强制检查 API Key 是否已设置（仅针对国内模型，因为国际版Key在Vercel Functions中）
+                if (modelConfig.isInternal && modelConfig.apiKey.includes("YOUR_")) {
                     throw new Error(`请先在代码中设置 ${modelConfig.name} 的真实 API Key 才能使用！`);
                 }
-
-                let requestMessages = []; // 用于构建发送给 API 的消息体
-                let url = `${modelConfig.baseURL}`;
+                
+                // ** 构建请求体，现在根据 modelConfig 是否是代理来调整 **
+                let requestBody;
+                let url = modelConfig.baseURL; // 请求的 URL
                 let headers = { 'Content-Type': 'application/json' };
-                let body;
 
-                // 统一处理系统指令和消息格式 (现在所有模型都支持 system role 了)
-                requestMessages.push({ role: "system", content: SYSTEM_INSTRUCTION_TEXT });
-                // 将 conversationHistory 映射为 OpenAI 兼容的 messages 格式
-                const messages = history.map(msg => ({
-                    role: msg.role === "model" ? "assistant" : msg.role, // "model" -> "assistant" for OpenAI
-                    content: msg.parts[0].text // 确保从 msg.parts[0].text 获取内容
-                }));
-                requestMessages.push(...messages);
+                if (modelConfig.baseURL.includes("/api/gemini-proxy")) { // 如果是 Vercel 代理模型
+                    // 前端只负责将核心数据传给代理
+                    requestBody = {
+                        conversationHistory: history, // 将完整的对话历史传给代理
+                        modelId: modelConfig.model // 将模型 ID 传给代理，让代理选择用哪个模型
+                    };
+                } else { // 如果是直接调用国内 API 模型 (SiliconCloud)
+                    let requestMessages = [];
+                    requestMessages.push({ role: "system", content: SYSTEM_INSTRUCTION_TEXT });
+                    const messages = history.map(msg => ({
+                        role: msg.role === "model" ? "assistant" : msg.role,
+                        content: msg.parts[0].text
+                    }));
+                    requestMessages.push(...messages);
 
-                url += modelConfig.endpointSuffix; 
-                headers['Authorization'] = `Bearer ${modelConfig.apiKey}`;
-                body = {
-                    model: modelConfig.model,
-                    messages: requestMessages, 
-                    stream: false 
-                };
+                    url += modelConfig.endpointSuffix;
+                    headers['Authorization'] = `Bearer ${modelConfig.apiKey}`;
+                    requestBody = {
+                        model: modelConfig.model,
+                        messages: requestMessages,
+                        stream: false
+                    };
+                }
+
 
                 try {
                     const res = await fetch(url, {
                         method: 'POST',
                         headers: headers,
-                        body: JSON.stringify(body)
+                        body: JSON.stringify(requestBody)
                     });
 
                     if (!res.ok) {
                         const errorData = await res.json();
-                        throw new Error(`API Error from ${modelConfig.name}: ${res.status} ${res.statusText} - ${JSON.stringify(errorData.error.details || errorData.error.message || 'Unknown error')}`);
+                        // 统一错误信息，明确是哪个模型出问题
+                        const errorMessage = `API Error from ${modelConfig.name}: ${res.status} ${res.statusText} - ${JSON.stringify(errorData.error.details || errorData.error.message || 'Unknown error')}`;
+                        // 对于 Vercel 代理，如果 Key 不对，也会在这里报错，并且错误信息中应该会有 Vercel Function 的提示
+                        throw new Error(errorMessage);
                     }
 
                     const data = await res.json();
-                    let aiText = data?.choices?.[0]?.message?.content || "⚠️ AI未返回有效回答。"; // 现在所有模型都按 OpenAI 兼容格式解析
+                    // 国际版模型现在也是由代理处理，返回结构统一为 OpenAI 兼容
+                    let aiText = data?.choices?.[0]?.message?.content || "⚠️ AI未返回有效回答。";
                     return aiText;
 
                 } catch (error) {
                     console.error(`Error calling ${modelConfig.name} API:`, error);
-                    let errorMessage = `${modelConfig.name} 服务连接失败，请检查网络或API Key是否正确。`;
-                    // 开发者提醒
-                    if (!modelConfig.isInternal) { 
-                         errorMessage += "（可能是因为开发者维护不当，请通知开发者yinzimike@gmail.com）";
-                    } 
+                    // 细化错误提示，区分代理层错误和网络错误
+                    let errorMessage = `抱歉，${modelConfig.name} 服务暂时遇到问题：${error.message}`;
+                    // 专门处理 Key 未设置的提醒（这里已经由前端检查）
+                    if (error.message.includes("API Key not configured")) {
+                        // 错误信息已经在函数开头或 Vercel Function 中处理，这里只作为捕获
+                    } else if (error.message.includes("Failed to fetch") || error.message.includes("Proxy failed")) {
+                        errorMessage += "（可能是网络连接失败，请检查您的网络或科学上网设置，或通知开发者。）";
+                    } else {
+                        errorMessage += "（请通知开发者，检查服务器或API Key。）";
+                    }
                     throw new Error(errorMessage);
                 }
             }
+
 
 
             /**
