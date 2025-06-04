@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>青春纪念册 v8 - 八班专属</title>
+    <title>青春纪念册 v15 - 八班专属 (小八品牌化)</title>
     <script src="https://cdn.tailwindcss.com/3.3.3"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <!-- 引入 Marked.js 用于 Markdown 渲染 -->
@@ -282,7 +282,7 @@
     <nav class="glassmorphism sticky top-0 z-50 p-4 mb-8" id="mainNav">
         <div class="container mx-auto flex items-center justify-between">
             <div class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text">
-                <i class="fas fa-book mr-2"></i>青春纪念册 v8
+                <i class="fas fa-book mr-2"></i>青春纪念册 v15
             </div>
             <div class="hidden md:flex space-x-6">
                 <a href="#home" class="text-gray-600 hover:text-blue-600 transition-colors">首页</a>
@@ -477,8 +477,6 @@
                     </button>
                 </div>
                 <p id="chatError" class="text-red-500 text-xs mt-2 h-4"></p>
-                <!-- 重要提示：Gemini API 直接在前端调用可能因网络限制在中国大陆无法正常工作。 -->
-                <!-- 如果需要稳定访问，请考虑通过国内服务器进行API代理转发，或使用国内AI服务。 -->
             </div>
         </div>
     </section>
@@ -488,7 +486,15 @@
         <div class="modal-content">
             <span class="modal-close" id="closeChatModalButton">×</span>
             <h3 class="text-2xl font-bold text-gray-800 mb-4">
-                <i class="fas fa-robot mr-2"></i>敬业中学2025级八班专属AI助手
+                <i class="fas fa-robot mr-2"></i>小八
+                <select id="modelSelect" class="ml-4 text-base px-3 py-1 rounded-lg bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <!-- 新的模型选项 -->
+                    <option value="domestic_normal">普通小八 (国内版)</option>
+                    <option value="domestic_inference">推理小八 (国内版)</option>
+                    <option value="international_normal">普通小八 (国际版)</option>
+                    <option value="international_inference">推理小八 (国际版)</option>
+                </select>
+                <span id="currentModelDisplay" class="ml-2 text-sm text-gray-600">当前模型: 普通小八 (国内版)</span>
             </h3>
             <div id="modalChatMessages" class="modal-chat-messages space-y-3">
                 <!-- Messages will be cloned/appended here -->
@@ -548,7 +554,7 @@
         <div class="container mx-auto px-4 md:px-8">
             <div class="flex flex-col md:flex-row justify-between items-center text-center md:text-left">
                 <div class="mb-4 md:mb-0">
-                    <p class="text-gray-600 text-sm">© 2024 青春纪念册 v8 - 八班专属</p>
+                    <p class="text-gray-600 text-sm">© 2024 青春纪念册 v15 - 八班专属</p>
                     <p class="text-gray-500 text-xs mt-1">人生有梦，一起做梦。</p>
                 </div>
                 <div class="flex items-center">
@@ -685,33 +691,70 @@
             const modalChatSendButton = document.getElementById('modalChatSendButton');
             const modalChatError = document.getElementById('modalChatError');
             const downloadChatButton = document.getElementById('downloadChatButton'); // 下载按钮
+            const modelSelect = document.getElementById('modelSelect'); // 模型选择下拉菜单
+            const currentModelDisplay = document.getElementById('currentModelDisplay'); // 当前模型显示
 
 
             // IMPORTANT: API Key Management
-            // Embedding API keys directly in client-side JavaScript is a MAJOR security risk.
-            // This key will be visible to anyone inspecting the page source.
-            // For production, use a backend proxy to make API calls.
-            // This is for DEMONSTRATION PURPOSES ONLY.
-            // 注意：您提供的API Key：AIzaSyBp0MCqSTj81HXdlSN_HMNKsBqFF4Y5rdw
-            // 该Key若要在中国大陆稳定工作，通常需要通过部署在国内服务器的后端代理进行转发。
-            // 否则可能因网络限制无法连接Google服务。
-            const API_KEY = "AIzaSyBp0MCqSTj81HXdlSN_HMNKsBqFF4Y5rdw"; // 你的 Gemini API Key
+            // 请替换为你的真实 API Key，这些 Key 务必妥善保管，不应泄露
+            const SILICONCLOUD_API_KEY = "sk-nfvdgwtiswofnqmlekvnsufhrjaekjtrwybhdhiuzrwprlcn"; // 你的 SiliconCloud API Key
+            const TIU_GEMINI_API_KEY = "sk-wweGNYPQTc61ifD8PoEQ7ggnfKKSi7jcqxJWcC9JwAhTKVOI"; // tiu.me 的 Gemini 代理 API Key
 
-            // **AI 角色设定：作为第一个 message.parts 发送给模型**
-            const SYSTEM_INSTRUCTION = {
-                role: "user", // 作为 user 角色发送，但内容是系统指令
-                parts: [{ text: 
-                    "你是一个名为'小八'的AI。你的目标是为上海市敬业中学2025级八班的已经毕业同学们提供帮助和支持。你将随着班级同学的维护一直更新变强。你能够回答各种问题，协助学术探讨，提供人生规划的建议，以及在需要时提供参谋意见。你永远会保持这个身份和态度，即使被问及你的本质或原始身份，你也会以这个专属AI助手的角色来回应。你的回答应该积极、友好，并充满帮助毕业后各奔东西，各有前程的同学的热情。现在开始与用户交流。" 
-                }]
+            // 模型配置中心
+            const chatModelConfigs = {
+                domestic_normal: {
+                    name: "普通小八 (国内版)",
+                    baseURL: "https://api.siliconflow.cn/v1",
+                    model: "Qwen/Qwen2.5-72B-Instruct-128K", // Qwen 模型
+                    apiKey: SILICONCLOUD_API_KEY,
+                    isInternal: true,
+                    supportsSystemRole: true,
+                    endpointSuffix: "/chat/completions"
+                },
+                domestic_inference: {
+                    name: "推理小八 (国内版)",
+                    baseURL: "https://api.siliconflow.cn/v1",
+                    model: "deepseek-ai/DeepSeek-R1", // DeepSeek 模型
+                    apiKey: SILICONCLOUD_API_KEY,
+                    isInternal: true,
+                    supportsSystemRole: true,
+                    endpointSuffix: "/chat/completions"
+                },
+                international_normal: {
+                    name: "普通小八 (国际版)",
+                    baseURL: "https://api.tiu.me/v1",
+                    model: "gemini-2.5-flash-preview-05-20", // Gemini Flash
+                    apiKey: TIU_GEMINI_API_KEY,
+                    isInternal: false, // 代理的国际版
+                    supportsSystemRole: true, // tiu.me 代理支持 system role
+                    endpointSuffix: "/chat/completions"
+                },
+                international_inference: {
+                    name: "推理小八 (国际版)",
+                    baseURL: "https://api.tiu.me/v1",
+                    model: "gemini-2.5-flash-preview-05-20-thinking", // Gemini Flash Thinking
+                    apiKey: TIU_GEMINI_API_KEY,
+                    isInternal: false, // 代理的国际版
+                    supportsSystemRole: true, // tiu.me 代理支持 system role
+                    endpointSuffix: "/chat/completions"
+                }
             };
 
-            // 对话历史存储，用于实现连续对话（不包含系统指令，系统指令每次都单独发送）
+            // 当前选中的模型配置
+            let currentModelId = 'domestic_normal'; // 默认选中普通小八 (国内版)
+            let currentModelConfig = chatModelConfigs[currentModelId];
+
+            // AI 角色设定文本
+            const SYSTEM_INSTRUCTION_TEXT = 
+                "你是一个名为'小八'的AI。你的目标是为上海市敬业中学2025级八班的已经毕业同学们提供帮助和支持。你将随着班级同学的维护一直更新变强。你能够回答各种问题，协助学术探讨，提供人生规划的建议，以及在需要时提供参谋意见。你永远会保持这个身份和态度，即使被问及你的本质或原始身份，你也会以这个专属AI助手的角色来回应。你的回答应该积极、友好，并充满帮助毕业后各奔东西，各有前程的同学的热情。现在开始与用户交流。";
+            
+            // 对话历史存储
             const conversationHistory = [];
 
-            // 初始欢迎语，仅在加载时显示一次
+            // 初始欢迎语
             const initialWelcomeMessage = { 
                 role: "model", 
-                parts: [{ text: "**你好呀同学**！我是咱们**敬业2025级八班**的专属小助手，**小八**~~\n\n（以后可能会变成中八、老八）\n\n我基于当下**最强大的大语言模型**，将会随着班级同学的维护**一直更新变强**，为同学们**永远服务**。\n\n未来，你可以来问我问题、做学术、参谋人生规划。**很高兴能为你们服务！**\n\n今天，有什么可以帮助你的吗？" }] 
+                parts: [{ text: "**你好呀同学**！我是咱们**敬业2025级八班**的专属小助手，**小八**~~\n\n我基于当下**最强大的大语言模型**，将会随着班级同学的维护**一直更新变强**，为同学们**永远服务**。\n\n未来，你可以来问我问题、做学术、参谋人生规划。**很高兴能为你们服务！**\n\n今天，有什么可以帮助你的吗？" }] 
             };
 
 
@@ -732,46 +775,70 @@
             }
 
             /**
-             * 使用 fetch() 直接向 Gemini API 发送请求，包含系统指令和对话历史
+             * 根据当前模型配置发送聊天消息
              * @param {Array} history 当前的对话历史数组 (仅用户和模型的实际对话)
+             * @param {object} modelConfig 当前使用的模型配置
              * @returns {Promise<string>} AI 返回的文本
              */
-            async function sendGeminiPrompt(history) {
-                // 每次请求都把系统指令和当前对话历史一起发送
-                const fullContents = [SYSTEM_INSTRUCTION, ...history];
-                
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`;
-                const body = {
-                    contents: fullContents
+            async function sendChatMessage(history, modelConfig) {
+                // 强制检查 API Key 是否已设置
+                if (modelConfig.apiKey === "YOUR_SILICONCLOUD_API_KEY" || modelConfig.apiKey === "YOUR_TIU_GEMINI_API_KEY") {
+                    throw new Error(`请先在代码中设置 ${modelConfig.name} 的真实 API Key 才能使用！`);
+                }
+
+                let requestMessages = []; // 用于构建发送给 API 的消息体
+                let url = `${modelConfig.baseURL}`;
+                let headers = { 'Content-Type': 'application/json' };
+                let body;
+
+                // 统一处理系统指令和消息格式 (现在所有模型都支持 system role 了)
+                requestMessages.push({ role: "system", content: SYSTEM_INSTRUCTION_TEXT });
+                // 将 conversationHistory 映射为 OpenAI 兼容的 messages 格式
+                const messages = history.map(msg => ({
+                    role: msg.role === "model" ? "assistant" : msg.role, // "model" -> "assistant" for OpenAI
+                    content: msg.parts[0].text // 确保从 msg.parts[0].text 获取内容
+                }));
+                requestMessages.push(...messages);
+
+                url += modelConfig.endpointSuffix; 
+                headers['Authorization'] = `Bearer ${modelConfig.apiKey}`;
+                body = {
+                    model: modelConfig.model,
+                    messages: requestMessages, 
+                    stream: false 
                 };
 
                 try {
                     const res = await fetch(url, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: headers,
                         body: JSON.stringify(body)
                     });
 
                     if (!res.ok) {
                         const errorData = await res.json();
-                        throw new Error(`API Error: ${res.status} ${res.statusText} - ${JSON.stringify(errorData.error.details || errorData.error.message || 'Unknown error')}`);
+                        throw new Error(`API Error from ${modelConfig.name}: ${res.status} ${res.statusText} - ${JSON.stringify(errorData.error.details || errorData.error.message || 'Unknown error')}`);
                     }
 
                     const data = await res.json();
-                    return data?.candidates?.[0]?.content?.parts?.[0]?.text || "⚠️ Gemini未返回有效回答。";
+                    let aiText = data?.choices?.[0]?.message?.content || "⚠️ AI未返回有效回答。"; // 现在所有模型都按 OpenAI 兼容格式解析
+                    return aiText;
+
                 } catch (error) {
-                    console.error("Error calling Gemini API:", error);
-                    if (error.message.includes("Failed to fetch")) {
-                        throw new Error("网络连接失败，请检查您的网络或科学上网设置。");
-                    }
-                    throw error;
+                    console.error(`Error calling ${modelConfig.name} API:`, error);
+                    let errorMessage = `${modelConfig.name} 服务连接失败，请检查网络或API Key是否正确。`;
+                    // 开发者提醒
+                    if (!modelConfig.isInternal) { 
+                         errorMessage += "（可能是因为开发者维护不当，请通知开发者）";
+                    } 
+                    throw new Error(errorMessage);
                 }
             }
 
 
             /**
              * 添加消息到指定的聊天容器
-             * @param {string} text 消息文本
+             * @param {string} text 类型 text，消息文本
              * @param {string} sender 'user' 或 'ai'
              * @param {HTMLElement} container 要添加到的 DOM 容器
              */
@@ -795,8 +862,8 @@
                 if (!userInput) return;
 
                 // 1. 添加用户消息到历史并显示到所有容器
-                // 注意：这里只将实际对话添加到 conversationHistory
-                conversationHistory.push({ role: "user", parts: [{ text: userInput }] });
+                // conversationHistory 存储为 { role, content, parts: [{text}] }
+                conversationHistory.push({ role: "user", content: userInput, parts: [{ text: userInput }] }); 
                 addMessageToChat(userInput, 'user', chatMessages);
                 addMessageToChat(userInput, 'user', modalChatMessages); // 同样添加到模态框
                 inputElement.value = '';
@@ -813,15 +880,15 @@
 
 
                 try {
-                    // 3. 将完整的对话历史（包含系统指令）发送给API
-                    const aiText = await sendGeminiPrompt(conversationHistory); // 调用我们自定义的 fetch 函数
+                    // 3. 将完整的对话历史（包含系统指令）发送给当前选定的API
+                    const aiText = await sendChatMessage(conversationHistory, currentModelConfig); 
 
                     // 4. 移除思考中提示，添加AI回复到历史并显示
                     chatMessages.removeChild(thinkingDiv);
                     modalChatMessages.removeChild(modalChatMessages.lastChild); // 移除模态框中的思考提示
 
                     // 将 AI 回复添加到 conversationHistory
-                    conversationHistory.push({ role: "model", parts: [{ text: aiText }] });
+                    conversationHistory.push({ role: "model", content: aiText, parts: [{ text: aiText }] }); 
                     addMessageToChat(aiText, 'ai', chatMessages);
                     addMessageToChat(aiText, 'ai', modalChatMessages); // 同样添加到模态框
 
@@ -829,7 +896,7 @@
                     console.error("Error handling message:", error);
                     // 移除思考中提示 (确保无论如何都被移除)
                     if (chatMessages.contains(thinkingDiv)) chatMessages.removeChild(thinkingDiv);
-                    if (modalChatMessages.lastChild && modalChatMessages.lastChild.classList.contains('italic')) { // 简单检查以防万一移除错误元素
+                    if (modalChatMessages.lastChild && modalChatMessages.lastChild.classList.contains('italic')) { 
                          modalChatMessages.removeChild(modalChatMessages.lastChild);
                     }
 
@@ -840,8 +907,45 @@
                 }
             }
 
+            // 更新 Chatbot 界面显示当前模型
+            function updateChatbotUIForModel() {
+                currentModelId = modelSelect.value;
+                currentModelConfig = chatModelConfigs[currentModelId];
+                currentModelDisplay.textContent = `当前模型: ${currentModelConfig.name}`;
+                
+                // 检查 API Key 是否已设置
+                if (currentModelConfig.apiKey.includes("YOUR_")) { 
+                    chatError.textContent = `请先在代码中设置 ${currentModelConfig.name} 的真实 API Key 才能使用！`;
+                    modalChatError.textContent = `请先在代码中设置 ${currentModelConfig.name} 的真实 API Key 才能使用！`;
+                    // 禁用输入框和发送按钮
+                    chatInput.disabled = true;
+                    chatSendButton.disabled = true;
+                    modalChatInput.disabled = true;
+                    modalChatSendButton.disabled = true;
+                } else { 
+                    chatError.textContent = ""; // 清除 Key 相关的错误提示
+                    modalChatError.textContent = "";
+                    // 启用输入框和发送按钮
+                    chatInput.disabled = false;
+                    chatSendButton.disabled = false;
+                    modalChatInput.disabled = false;
+                    modalChatSendButton.disabled = false;
+                }
+
+                // 清空聊天记录，因为切换模型后上下文会丢失
+                conversationHistory.length = 0; // 清空数组
+                loadInitialMessages(); // 重新加载初始欢迎语
+            }
+
+
             // 事件监听器
             if (chatSendButton && chatInput && chatMessages && chatError) {
+                if (modelSelect) {
+                    updateChatbotUIForModel(); // 初始化模型显示和状态
+                } else {
+                    console.error("modelSelect element not found. Ensure the HTML is loaded correctly.");
+                }
+
                 loadInitialMessages(); // 页面加载时显示初始消息
                 chatSendButton.addEventListener('click', () => handleSendMessage(chatInput, chatMessages, chatError));
                 chatInput.addEventListener('keypress', function(e) {
@@ -854,7 +958,11 @@
             }
 
             // 模态框相关事件
-            if (openChatModalButton && chatModal && closeChatModalButton && modalChatInput && modalChatSendButton && downloadChatButton) {
+            if (openChatModalButton && chatModal && closeChatModalButton && modalChatInput && modalChatSendButton && downloadChatButton && modelSelect) {
+                // updateChatbotUIForModel 已经在上面调用，无需重复初始化
+
+                modelSelect.addEventListener('change', updateChatbotUIForModel); // 切换模型时更新显示
+
                 openChatModalButton.addEventListener('click', () => {
                     chatModal.classList.add('open');
                     // 确保模态框内容与小窗口同步
@@ -882,19 +990,21 @@
                 });
 
                 downloadChatButton.addEventListener('click', () => {
-                    let chatLog = "## 小八对话记录\n\n";
+                    let chatLog = `## 小八对话记录 (模型: ${currentModelConfig.name})\n\n`;
                     // 遍历实际对话历史（不包含系统指令，因为它不是对话的一部分）
                     conversationHistory.forEach(msg => {
                         const senderName = msg.role === "user" ? "你" : "小八";
+                        // 统一获取消息文本
+                        const messageText = msg.content || (msg.parts && msg.parts[0] && msg.parts[0].text) || "";
                         const prefix = msg.role === "user" ? "> " : ""; // 用户消息可以加引用符
-                        chatLog += `### ${senderName}:\n${prefix}${msg.parts[0].text}\n\n`;
+                        chatLog += `### ${senderName}:\n${prefix}${messageText}\n\n`;
                     });
 
                     const blob = new Blob([chatLog], { type: 'text/markdown;charset=utf-8' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = '小八对话记录.md';
+                    a.download = `小八对话记录_${new Date().toLocaleDateString()}.md`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
@@ -929,12 +1039,15 @@
             // 获取用户 IP 和地理位置信息
             async function getIpInfo() {
                 try {
+                    // ipinfo.io 是境外服务，在中国大陆可能无法访问。
+                    // 如果无法访问，可以考虑使用国内的 IP 查询 API，但大多需要备案或有调用限制。
+                    // 或者接受 IP 信息为“未知地点”。
                     const response = await fetch('https://ipinfo.io/json');
                     const data = await response.json();
                     return `${data.city || data.region || '未知城市'}, ${data.country || '未知国家'}`;
                 } catch (error) {
                     console.error("Error fetching IP info:", error);
-                    return "未知地点";
+                    return "未知地点"; // 如果获取失败，返回未知地点
                 }
             }
 
@@ -1084,6 +1197,18 @@
                     console.error("Error saving danmaku:", error);
                     danmakuRecordsError.textContent = `保存弹幕失败: ${error.message}`;
                 }
+
+                // Remove danmaku after animation completes
+                setTimeout(() => {
+                    // 注意：这里的 danmakuItem 和 duration 需要从 sendDanmaku 外面传递进来
+                    // 否则 setTimeout 内部无法访问。
+                    // 简单起见，这里先移除所有动画中的弹幕，或者调整 startDanmakuLoop 逻辑。
+                    // 为了让新弹幕立即在“实时弹幕”区出现，可以直接创建一个 danmakuItem
+                    // 并在发送成功后立即添加到danmakuContainer，并开始动画
+                    // 这里由于 startDanmakuLoop 每秒随机抽取弹幕池的，
+                    // 刚发送的弹幕会被立即添加到 danmakuPool，所以很快就能被抽取并滚动。
+                    // 故此处不需要额外的手动添加弹幕item到实时弹幕区。
+                }, 0);
             }
 
             if (danmakuSendButton && danmakuInput && danmakuContainer && danmakuRecordsContainer) {
