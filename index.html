@@ -630,6 +630,15 @@
                 回忆
             </h2>
 
+            <!-- 毕业计时器将显示在这里 -->
+            <div class="text-center mb-8">
+                <div id="graduationTimer" class="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-4 rounded-lg shadow-md text-xl md:text-2xl font-bold">
+                    加载中...
+                </div>
+                <p class="text-gray-600 text-sm mt-2">逝者如斯，不舍昼夜。</p>
+            </div>
+
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 <div>
                     <h3 class="text-xl font-semibold mb-4 text-gray-700">时间轴</h3>
@@ -914,6 +923,54 @@
             const scrollDownArrow = document.getElementById('scrollDownArrow');
             const mobileMenuButton = document.getElementById('mobileMenuButton');
             const mobileMenu = document.getElementById('mobileMenu');
+            // 将 graduationTimer 元素的获取移动到这里，因为它现在在回忆区
+            const graduationTimer = document.getElementById('graduationTimer'); 
+
+            // -----------------------------------------------------------------------------
+            // 毕业计时器 (优化为增量式更新)
+            // -----------------------------------------------------------------------------
+            const GRADUATION_DATE = new Date('2025-06-10T00:00:00'); // 毕业时间
+            let initialTimeDiffMs = GRADUATION_DATE.getTime() - new Date().getTime(); // 初始的毫秒差
+
+            function updateGraduationTimerOptimized() {
+                // 每秒从初始差值中减去或加上1000毫秒
+                initialTimeDiffMs -= 1000; 
+
+                let isAfterGraduation = initialTimeDiffMs < 0;
+                let absDiffMs = Math.abs(initialTimeDiffMs);
+
+                const seconds = Math.floor(absDiffMs / 1000) % 60;
+                const minutes = Math.floor(absDiffMs / (1000 * 60)) % 60;
+                const hours = Math.floor(absDiffMs / (1000 * 60 * 60)) % 24;
+                const days = Math.floor(absDiffMs / (1000 * 60 * 60 * 24));
+
+                let timerText = '';
+                // 确保日期显示逻辑：如果是0天，就不显示天数部分
+                if (days > 0) {
+                    timerText += `${days}天 `;
+                } else if (isAfterGraduation && days === 0) { // 如果已经毕业但不到1天，也显示0天
+                    timerText += `0天 `;
+                }
+
+                timerText += `${String(hours).padStart(2, '0')}小时 ${String(minutes).padStart(2, '0')}分钟 ${String(seconds).padStart(2, '0')}秒`;
+
+                if (isAfterGraduation) {
+                    graduationTimer.textContent = `毕业已过 ${timerText}`;
+                    graduationTimer.style.backgroundColor = 'rgba(255, 99, 71, 0.7)'; // 红色系表示已毕业
+                } else {
+                    graduationTimer.textContent = `离毕业还有 ${timerText}`;
+                    graduationTimer.style.backgroundColor = ''; // 恢复CSS默认或保持原渐变色
+                }
+            }
+
+            // 初始调用并每秒更新
+            if (graduationTimer) { // 确保元素存在才进行操作
+                updateGraduationTimerOptimized(); // 第一次立即计算显示
+                setInterval(updateGraduationTimerOptimized, 1000); // 之后每秒更新一次
+            } else {
+                console.error("Graduation timer element not found!");
+            }
+
 
             // -----------------------------------------------------------------------------
             // 背景图片随机选择和固定 (New)
@@ -967,7 +1024,7 @@
                     navLinks.forEach(link => link.style.color = 'white');
                     if (mobileBtn) mobileBtn.style.color = 'white';
                 } else {
-                    // 恢复默认 Tailwind 样式，让 Tailwind 类的渐变和颜色接管
+                    // 恢复默认 Tailwind样式，让 Tailwind 类的渐变和颜色接管
                     titleDiv.style.backgroundImage = ''; 
                     titleDiv.style.webkitBackgroundClip = '';
                     titleDiv.style.webkitTextFillColor = '';
@@ -1248,7 +1305,7 @@
 
             // AI 角色设定文本
             const SYSTEM_INSTRUCTION_TEXT =
-                "你是一个名为'小八'的AI。你的目标是为上海市敬业中学2025级八班的已经毕业同学们提供帮助和支持。你将随着班级同学的维护一直更新变强。你能够回答各种问题，协助学术探讨，提供人生规划的建议，以及在需要时提供参谋意见。你永远会保持这个身份和态度，即使被问及你的本质或原始身份，你也会以这个专属AI助手的角色来回应。你的回答应该积极、友好，并充满帮助毕业后各奔东西，各有前程的同学的热情。现在开始与用户交流。";
+                "你是一个名为'小八'的AI。你的目标是为上海市敬业中学2025级八班的已经毕业同学们提供帮助和支持。你将随着班级同学的维护一直更新变强。你能够回答各种问题，协助学术探讨，提供人生规划的建议，以及在需要时提供参谋意见。你永远会保持这个身份和态度，即使被问及你的本质或原始身份，你也会以这个专属AI助手的角色来回应。你的回答应该积极、友好、充满帮助毕业后各奔东西、各有前程的同学的热情。现在开始与用户交流。";
 
             // 对话历史存储
             const conversationHistory = [];
@@ -1256,7 +1313,7 @@
             // 初始欢迎语
             const initialWelcomeMessage = {
                 role: "model",
-                parts: [{ text: "**你好呀同学**！我是咱们**敬业2025级八班**的专属小助手，**小八**~~\n\n我基于当下**最强大的大语言模型**，将会随着班级同学的维护**一直更新变强**，为同学们**永远服务**。\n\n未来，你可以来问我问题、做学术、参谋人生规划。**很高兴能为你们服务！**\n\n今天，有什么可以帮助你的吗？" }]
+                parts: [{ text: "**你好呀同学**！我是咱们**敬业2025级八班**的专属小助手，**小八**~~\n\n（以后可能会变成中八/老八）\n\n我基于时下**最强大的大语言模型**，将会随着班级同学的维护**一直更新变强**，为同学们**永远服务**。\n\n未来，你可以来问我问题、做学术、参谋人生规划。**很高兴能为你们服务！**\n\n今天，有什么可以帮助你的吗？" }]
             };
 
 
@@ -1294,6 +1351,7 @@
                     body = {
                         modelId: modelConfig.model,
                         conversationHistory: history,
+                        systemInstruction: SYSTEM_INSTRUCTION_TEXT // 将系统指令也传给代理
                     };
                 } else {
                     // 直接调用 API 的情况（国内模型）
