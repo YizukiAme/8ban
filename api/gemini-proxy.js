@@ -1,111 +1,97 @@
 // api/gemini-proxy.js
-// 这是 Vercel Functions 的入口文件，无需额外安装 express 或 http 模块
-// Vercel 会自动处理请求和响应对象
+// 这是一个 Vercel Serverless Function，用于代理对 tiu.me (Gemini) API 的请求
+// 部署在 Vercel 后，你的前端可以请求 /api/gemini-proxy，而无需面对 CORS 问题
 
-// 从环境变量中获取 API Key，这样更安全，不会硬编码到前端代码
-// 请确保你在 Vercel 项目设置中配置了 GEMINI_API_KEY_TIU 这个环境变量
-const TIU_GEMINI_API_KEY = process.env.GEMINI_API_KEY_TIU;
+// Vercel Functions 默认支持 node-fetch，无需额外安装
+// import fetch from 'node-fetch'; // 在 Vercel 环境中通常不需要显式引入，因为它是内置的
 
-// 定义 AI 角色设定文本，与前端代码中的 SYSTEM_INSTRUCTION_TEXT 保持一致
-// 确保你的前端代码和这里都使用最新且统一的角色设定
-const SYSTEM_INSTRUCTION_TEXT = "你是一个名为'小八'的AI。你的目标是为上海市敬业中学2025级八班的已经毕业同学们提供帮助和支持。你将随着班级同学的维护一直更新变强。你能够回答各种问题，协助学术探讨，提供人生规划的建议，以及在需要时提供参谋意见。你永远会保持这个身份和态度，即使被问及你的本质或原始身份，你也会以这个专属AI助手的角色来回应。你的回答应该积极、友好，并充满帮助毕业后各奔东西，各有前程的同学的热情。现在开始与用户交流。";
+// *** 请在 Vercel 项目设置中配置环境变量：GEMINI_API_KEY_TIU ***
+// 访问方式：process.env.YOUR_VARIABLE_NAME
+const TIU_GEMINI_API_KEY = process.env.GEMINI_API_KEY_TIU; 
 
-// Vercel Function 的入口函数，接收 req (请求) 和 res (响应) 对象
+// AI 角色设定，与前端代码中的 SYSTEM_INSTRUCTION_TEXT 保持一致
+const SYSTEM_INSTRUCTION_TEXT = 
+    "你是一个名为'小八'的AI。你的目标是为上海市敬业中学2025级八班的已经毕业同学们提供帮助和支持。你将随着班级同学的维护一直更新变强。你能够回答各种问题，协助学术探讨，提供人生规划的建议，以及在需要时提供参谋意见。你永远会保持这个身份和态度，即使被问及你的本质或原始身份，你也会以这个专属AI助手的角色来回应。你的回答应该积极、友好，并充满帮助毕业后各奔东西，各有前程的同学的热情。现在开始与用户交流。";
+
 export default async function (req, res) {
-    // 1. 处理 OPTIONS 预检请求
-    // 浏览器在发起 POST 等复杂请求前，会先发送 OPTIONS 预检请求
-    if (req.method === 'OPTIONS') {
-        // Vercel Functions 默认应该处理 CORS，但为了确保万无一失
-        // 显式设置 CORS 头部
-        res.setHeader('Access-Control-Allow-Origin', 'https://8ban.uno'); // 允许你的域名
-        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS'); // 允许的方法
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // 允许的头部
-        res.setHeader('Access-Control-Max-Age', '86400'); // 缓存预检结果24小时
-        res.status(204).end(); // 204 No Content，表示预检成功
-        return;
-    }
-
-    // 2. 确保只处理 POST 请求 (前端只会用 POST 发送对话)
+    // 检查请求方法，只允许 POST
     if (req.method !== 'POST') {
-        // Vercel Functions 默认已经有请求方法限制，但这是一种防御性编程
-        res.status(405).json({ error: 'Method Not Allowed' });
-        return;
+        // 对于 OPTIONS 预检请求，直接返回 200 OK 并带上 CORS 头
+        if (req.method === 'OPTIONS') {
+            res.setHeader('Access-Control-Allow-Origin', '*'); // 允许所有源（或者更精确地设置为 'https://8ban.uno'）
+            res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // 允许前端发送的头
+            res.setHeader('Access-Control-Max-Age', '86400'); // 预检请求结果缓存1天
+            return res.status(200).end();
+        }
+        return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    // 3. 获取请求体 (前端传来的对话历史和模型ID)
-    let requestBody;
-    try {
-        requestBody = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    } catch (e) {
-        console.error("Error parsing request body:", e);
-        res.status(400).json({ error: "Invalid JSON in request body" });
-        return;
+    // 检查 API Key 是否已设置
+    if (!TIU_GEMINI_API_KEY) {
+        return res.status(500).json({ error: "Server API Key not configured. Please set GEMINI_API_KEY_TIU in Vercel Environment Variables." });
     }
 
-    const { conversationHistory, modelId } = requestBody;
+    // 从前端请求体中获取对话历史和模型ID
+    const { conversationHistory, modelId } = req.body;
 
     if (!conversationHistory || !modelId) {
-        res.status(400).json({ error: "Missing conversationHistory or modelId in request body" });
-        return;
+        return res.status(400).json({ error: "Missing conversationHistory or modelId in request body." });
     }
 
-    // 4. 根据 modelId 确定要请求的实际 tiu.me 模型和 API Key
-    // 这里假设 tiu.me 代理的 Gemini 模型就是 "gemini-2.5-flash-preview-05-20"
-    // 你的前端会把这个 modelId 传过来，然后由 proxy 决定用哪个。
-    // 为了简化和 tiu.me 统一，这里直接使用一个固定的 model 和 API Key
-    // 如果 tiu.me 未来有多个模型对应不同的 API Key，可以在这里扩展逻辑
-    const TIU_MODEL_NAME = modelId; // 直接使用前端传过来的模型ID
-
-    const apiUrl = `https://api.tiu.me/v1/chat/completions`; // tiu.me 的实际 API 地址
+    // tiu.me 的 API URL
+    const targetUrl = `https://api.tiu.me/v1/chat/completions`;
     const headers = {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${TIU_GEMINI_API_KEY}` // 使用从环境变量获取的 Key
+        'Authorization': `Bearer ${TIU_GEMINI_API_KEY}`
     };
 
-    // 构建发送给 tiu.me 的消息体（OpenAI 兼容格式）
-    const messagesToSend = [];
-    messagesToSend.push({ role: "system", content: SYSTEM_INSTRUCTION_TEXT });
-    // 将 conversationHistory 映射为 OpenAI 兼容的 messages 格式
-    history.forEach(msg => {
-        messagesToSend.push({
-            role: msg.role === "model" ? "assistant" : msg.role, // "model" -> "assistant"
-            content: msg.parts[0].text // 确保从 msg.parts[0].text 获取内容
-        });
-    });
+    // 构建发送给 tiu.me 的请求体
+    const requestMessages = [];
+    requestMessages.push({ role: "system", content: SYSTEM_INSTRUCTION_TEXT });
+    const messages = conversationHistory.map(msg => ({
+        role: msg.role === "model" ? "assistant" : msg.role, // "model" -> "assistant" for OpenAI
+        content: msg.parts[0].text // 确保从 msg.parts[0].text 获取内容
+    }));
+    requestMessages.push(...messages);
 
-    const requestPayload = {
-        model: TIU_MODEL_NAME,
-        messages: messagesToSend,
-        stream: false // 如果需要流式输出，这里和前端都需要额外配置
+    const requestBody = {
+        model: modelId, // 使用前端传递的模型ID
+        messages: requestMessages,
+        stream: false // 如果需要流式传输，这里需要修改
     };
 
-    // 5. 向 tiu.me 发起实际请求
     try {
-        const apiRes = await fetch(apiUrl, {
+        const apiRes = await fetch(targetUrl, {
             method: 'POST',
             headers: headers,
-            body: JSON.stringify(requestPayload)
+            body: JSON.stringify(requestBody)
         });
 
         const data = await apiRes.json();
 
-        // 如果 tiu.me API 返回错误
+        // 将 tiu.me API 的响应状态码和内容直接转发给前端
+        res.setHeader('Access-Control-Allow-Origin', '*'); // **允许所有源，解决前端 CORS 问题**
+        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS'); // 必须允许 POST 和 OPTIONS
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); // 允许前端发出的头
+        
+        // 通常情况下，Vercel Functions 会自动处理一些基本 CORS 头，
+        // 但显式设置 Access-Control-Allow-Origin 可以在这里确保。
+
         if (!apiRes.ok) {
+            // 如果上游 API 返回错误，也把错误状态码和信息返回给前端
             console.error("Error from tiu.me API:", data);
-            // 向前端返回 tiu.me 的错误信息和状态码
-            res.status(apiRes.status).json(data);
-            return;
+            return res.status(apiRes.status).json(data);
         }
 
-        // 成功：向前端返回 tiu.me 的响应数据
-        // Vercel Functions 默认会处理 CORS 头部（Access-Control-Allow-Origin: *）
-        // 但为了安全和明确性，也可以再次显式设置
-        res.setHeader('Access-Control-Allow-Origin', 'https://8ban.uno'); // 允许你的域名
-        res.status(200).json(data); // 直接将 API 响应返回给前端
+        return res.status(200).json(data);
 
     } catch (error) {
         console.error("Proxy request failed:", error);
-        // 向前端返回代理请求失败的错误信息
-        res.status(500).json({ error: "Proxy failed: " + error.message });
+        // 如果代理请求本身失败（如网络问题）
+        return res.status(500).json({ 
+            error: "Proxy server internal error: " + error.message,
+            developerMessage: "检查 Vercel Function 日志和上游 API 状态。" 
+        });
     }
 }
