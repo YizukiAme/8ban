@@ -9,13 +9,18 @@
     <!-- 引入 Marked.js 用于 Markdown 渲染 -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
+        /* Base styles */
         body {
             font-family: 'Noto Sans SC', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
             color: #2d3748;
             overflow-x: hidden;
+            scroll-behavior: smooth; /* Ensure smooth scrolling works */
+            
+            /* 修复顶部白框问题：body的背景色与固定背景的fallback色一致 */
+            background-color: #1a202c; /* 深色背景，与固定背景的初始/fallback色保持一致 */
         }
 
+        /* Glassmorphism effect */
         .glassmorphism {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px);
@@ -24,31 +29,29 @@
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
         }
 
+        /* Card hover effects */
         .card-hover {
             transition: all 0.3s ease;
         }
-
         .card-hover:hover {
             transform: translateY(-5px);
             box-shadow: 0 12px 28px 0 rgba(31, 38, 135, 0.2);
         }
-
-        /* Enhanced hover effect for specific cards */
         .enhanced-card-hover {
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
         .enhanced-card-hover:hover {
             transform: scale(1.03) translateY(-3px);
-            box-shadow: 0 15px 30px -5px rgba(59, 130, 246, 0.25), 0 8px 10px -6px rgba(59, 130, 246, 0.2); /* Blue glow */
+            box-shadow: 0 15px 30px -5px rgba(59, 130, 246, 0.25), 0 8px 10px -6px rgba(59, 130, 246, 0.2);
         }
 
+        /* Highlight text (existing) */
         .highlight-text {
             position: relative;
             display: inline-block;
         }
-
         .highlight-text::after {
-            content: '';
+            content: none;
             position: absolute;
             bottom: 0;
             left: 0;
@@ -58,6 +61,7 @@
             z-index: -1;
         }
 
+        /* Mobile menu (existing) */
         .mobile-menu {
             position: absolute;
             top: 100%;
@@ -76,13 +80,12 @@
             transition: transform 0.3s ease, opacity 0.3s ease;
             z-index: 100;
         }
-
         .mobile-menu.active {
             transform: scaleY(1);
             opacity: 1;
         }
 
-        /* Tool area reveal animation */
+        /* Tool area reveal animation (existing) */
         .tools-grid-container {
             max-height: 0;
             overflow: hidden;
@@ -90,14 +93,13 @@
             opacity: 0;
             transform: translateY(20px);
         }
-
         .tools-grid-container.active {
             max-height: 2000px; /* Adjust if needed for more tools */
             opacity: 1;
             transform: translateY(0);
         }
 
-        /* Chat bubble styles */
+        /* Chat bubble styles (existing) */
         .chat-bubble {
             padding: 0.75rem 1rem;
             border-radius: 1rem;
@@ -117,43 +119,40 @@
             margin-right: auto;
             border-bottom-left-radius: 0.25rem;
         }
-        /* Markdown 渲染后的样式优化 */
         .chat-bubble-ai p:first-child { margin-top: 0; }
         .chat-bubble-ai p:last-child { margin-bottom: 0; }
         .chat-bubble-ai pre {
-            background-color: #2d3748; /* Dark background for code blocks */
-            color: #e2e8f0; /* Light text color */
+            background-color: #2d3748;
+            color: #e2e8f0;
             padding: 0.75rem;
             border-radius: 0.5rem;
-            overflow-x: auto; /* Enable horizontal scrolling for long code lines */
+            overflow-x: auto;
             font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-            font-size: 0.875rem; /* text-sm */
+            font-size: 0.875rem;
             margin-top: 0.5rem;
             margin-bottom: 0.5rem;
-            line-height: 1.5; /* improve readability of code */
+            line-height: 1.5;
         }
         .chat-bubble-ai code {
-            background-color: #cbd5e0; /* lighter gray for inline code */
+            background-color: #cbd5e0;
             padding: 0.2em 0.4em;
             border-radius: 0.25rem;
             font-size: 0.875em;
         }
         .chat-bubble-ai ul, .chat-bubble-ai ol {
-            margin-left: 1.25rem; /* space-x-5 for lists */
+            margin-left: 1.25rem;
             margin-top: 0.5rem;
             margin-bottom: 0.5rem;
-            list-style-type: disc; /* default for ul */
+            list-style-type: disc;
         }
         .chat-bubble-ai ol {
             list-style-type: decimal;
         }
-
-
         #chatMessages {
             scroll-behavior: smooth;
         }
 
-        /* Danmaku animation */
+        /* Danmaku animation (existing) */
         @keyframes moveRight {
             0% { transform: translateX(-100%); opacity: 1;}
             90% { opacity: 1; }
@@ -165,42 +164,40 @@
             font-weight: 500;
             padding: 5px 10px;
             border-radius: 5px;
-            background-color: rgba(0,0,0,0.1); /* Slight background for readability */
+            background-color: rgba(0,0,0,0.1);
         }
 
-        /* Timeline dot improvement */
+        /* Timeline dot (existing) */
         .timeline-dot {
             width: 12px;
             height: 12px;
-            background-color: #60a5fa; /* blue-400 */
+            background-color: #60a5fa;
             border-radius: 50%;
             border: 2px solid white;
             box-shadow: 0 0 0 3px #60a5fa;
         }
 
-        /* Modal Chatbot Styles */
+        /* Modal Chatbot Styles (existing) */
         .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1000; /* Sit on top */
+            display: none;
+            position: fixed;
+            z-index: 1000;
             left: 0;
             top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-            backdrop-filter: blur(8px); /* Blur background */
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            backdrop-filter: blur(8px);
             justify-content: center;
             align-items: center;
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
         }
-
         .modal.open {
             display: flex;
             opacity: 1;
         }
-
         .modal-content {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(15px);
@@ -209,9 +206,9 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             position: relative;
             width: 90%;
-            max-width: 960px; /* Max width for larger screens */
+            max-width: 960px;
             height: 90%;
-            max-height: 700px; /* Max height for larger screens */
+            max-height: 700px;
             display: flex;
             flex-direction: column;
             transform: translateY(20px);
@@ -222,7 +219,6 @@
             transform: translateY(0);
             opacity: 1;
         }
-
         .modal-close {
             position: absolute;
             top: 1rem;
@@ -255,7 +251,7 @@
             padding-top: 0.5rem;
         }
 
-        /* Danmaku Records Specific Styles */
+        /* Danmaku Records Specific Styles (existing) */
         .danmaku-record-item {
             background: rgba(255, 255, 255, 0.8);
             border-radius: 0.75rem;
@@ -270,33 +266,216 @@
             line-height: 1.4;
         }
         .danmaku-record-item .info {
-            font-size: 0.75rem; /* text-xs */
-            color: #64748b; /* slate-500 */
+            font-size: 0.75rem;
+            color: #64748b;
             margin-top: 0.5rem;
             text-align: right;
         }
+
+
+        /* 新增：固定背景层，实现视差滚动 */
+        #fixed-background {
+            position: fixed; /* 固定在视口 */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* 置于所有内容之下 */
+            background-size: cover; /* 覆盖整个区域 */
+            background-position: center; /* 居中 */
+            background-repeat: no-repeat; /* 不重复 */
+            filter: brightness(0.6) saturate(1.2); /* 背景滤镜，不影响UI */
+            transition: background-image 0.5s ease-in-out; /* 图片切换动画 */
+            background-color: #1a202c; /* 作为图片加载前的fallback色 */
+        }
+
+        /* New styles for Hero Section and Animations */
+        #hero-section {
+            position: relative; /* 确保内容在其z-index层级上 */
+            min-height: 100vh; /* Make it take full viewport height */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            overflow: hidden; /* Ensure content doesn't spill */
+        }
+        
+        /* 移除 #hero-bg-image 的样式，因为它已被固定背景层取代 */
+
+
+        #hero-content {
+            z-index: 10; /* Bring content to front */
+            padding: 1rem;
+            max-width: 900px;
+            margin: 0 auto;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.4); /* Text shadow for readability */
+            opacity: 0; /* Initial hidden state for animation */
+            transform: translateY(20px);
+            animation: fadeInSlideUp 1.2s ease-out forwards 0.5s; /* Fade in and slide up after a delay */
+        }
+
+        @keyframes fadeInSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #hero-section h1 {
+        font-size: 4.5rem; /* 增大标题，从3.5rem改为4.5rem (约72px) */
+        font-weight: 700; /* font-bold */
+        margin-bottom: 1.5rem; /* mb-6 */
+        line-height: 1.2;
+        color: white; /* 设置为纯白色 */
+        text-align: center;
+        text-shadow: 0 4px 12px rgba(0,0,0,0.6), 0 0 20px rgba(0,0,0,0.3); /* 增加更明显的文本阴影，使其在背景上更突出和清晰 */
+        
+        /* 新增：为标题添加透明度 */
+        opacity: 0.8; /* 设置为 90% 不透明，可根据需要调整此值 */
+    }
+
+        #hero-section p {
+            font-size: 1.5rem; /* text-2xl equivalent */
+            color: rgba(255, 255, 255, 0.8); /* Semi-transparent white */
+            margin-bottom: 2rem; /* mb-8 */
+            text-align: center;
+        }
+
+        .scroll-down-arrow {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 2rem;
+            animation: bounce 2s infinite; /* Basic bouncing animation */
+            cursor: pointer;
+            z-index: 10;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            opacity: 0; /* Initial hidden state for animation */
+            animation: fadeInBounce 2s infinite forwards 1.5s; /* Fade in then start bouncing */
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            40% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+            60% {
+                transform: translateX(-50%) translateY(-5px);
+            }
+        }
+        @keyframes fadeInBounce {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            50% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 1; } /* Stay visible for bounce */
+        }
+
+
+        /* Navigation bar initial state (transparent on hero section) */
+        .nav-initial {
+        background: transparent !important;
+        backdrop-filter: none !important;
+        box-shadow: none !important;
+        /* 增加 opacity 过渡，让导航栏淡入淡出 */
+        transition: all 0.5s ease-out, opacity 0.5s ease-out; /* 同时过渡所有属性和 opacity */
+        margin-bottom: 0 !important; /* 强制移除 mb-8 */
+        
+        /* 初始隐藏和禁用点击事件 */
+        opacity: 0; /* 默认完全透明 */
+        pointer-events: none; /* 禁用鼠标事件，让下方的 hero-section 可以被点击或选择 */
+    }
+
+    /* 当滚动时，nav-scrolled 状态会恢复可见和可点击 */
+    .nav-scrolled {
+        background: rgba(255, 255, 255, 0.7) !important;
+        backdrop-filter: blur(10px) !important;
+        border-radius: 16px !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15) !important;
+        transition: all 0.5s ease-out, opacity 0.5s ease-out; /* 确保过渡效果一致 */
+        margin-bottom: 0 !important;
+        
+        opacity: 1 !important; /* 强制完全不透明 */
+        pointer-events: auto !important; /* 恢复鼠标事件，可点击 */
+    }
+
+
+        /* Navigation bar scrolled state (glassmorphism effect) */
+        .nav-scrolled {
+            background: rgba(255, 255, 255, 0.7) !important;
+            backdrop-filter: blur(10px) !important;
+            border-radius: 16px !important; /* Already rounded on base */
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15) !important;
+            transition: all 0.5s ease-out;
+            /* nav-scrolled 状态下的颜色通过JS动态设置，以保证准确性 */
+        }
+
+
+        /* Content sections initial hidden state for scroll reveal */
+        .content-section {
+            opacity: 0;
+            transform: translateY(50px); /* Start slightly below its final position */
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        /* Content sections visible state */
+        .content-section.fade-in {
+            opacity: 1;
+            transform: translateY(0); /* Move to final position */
+        }
+
+        /* Adjust button styles for hero section to match light background */
+        #hero-content .bg-blue-500,
+        #hero-content .bg-purple-500,
+        #hero-content .bg-green-500,
+        #hero-content .bg-orange-500 {
+            background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent white buttons */
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white; /* White text for buttons */
+            transition: all 0.3s ease;
+        }
+        /* Hover styles for these buttons */
+        #hero-content .bg-blue-500:hover { background-color: rgba(59, 130, 246, 0.6); border-color: rgba(59, 130, 246, 0.8); }
+        #hero-content .bg-purple-500:hover { background-color: rgba(168, 85, 247, 0.6); border-color: rgba(168, 85, 247, 0.8); }
+        #hero-content .bg-green-500:hover { background-color: rgba(34, 197, 94, 0.6); border-color: rgba(34, 197, 94, 0.8); }
+        #hero-content .bg-orange-500:hover { background-color: rgba(249, 115, 22, 0.6); border-color: rgba(249, 115, 22, 0.8); }
     </style>
 </head>
 <body class="min-h-screen">
+    <!-- 新增：固定背景层，用于实现视差滚动效果 -->
+    <div id="fixed-background"></div>
+
+    <!-- Top of Page Anchor - 用于导航条的“首页”链接点击回到页面最顶端 -->
+    <div id="top-of-page"></div>
+
     <!-- 导航条 -->
-    <nav class="glassmorphism sticky top-0 z-50 p-4 mb-8" id="mainNav">
+    <nav class="sticky top-0 z-50 p-4 nav-initial" id="mainNav">
         <div class="container mx-auto flex items-center justify-between">
-            <div class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text">
+            <div class="text-xl font-bold">
                 <i class="fas fa-book mr-2"></i>八贤渡·敬业舟 - 202508 永久纪念页
             </div>
             <div class="hidden md:flex space-x-6">
-                <a href="#home" class="text-gray-600 hover:text-blue-600 transition-colors">首页</a>
-                <a href="#memory-area" class="text-gray-600 hover:text-blue-600 transition-colors">回忆</a>
-                <a href="#tool-area" class="text-gray-600 hover:text-blue-600 transition-colors">工具</a>
-                <a href="#chatbot-area" class="text-gray-600 hover:text-blue-600 transition-colors">Chat with 小八</a>
-                <a href="#message-area" class="text-gray-600 hover:text-blue-600 transition-colors">留言</a>
+                <a href="#top-of-page" class="hover:text-blue-600 transition-colors">首页</a>
+                <a href="#memory-area" class="hover:text-blue-600 transition-colors">回忆</a>
+                <a href="#tool-area" class="hover:text-blue-600 transition-colors">工具</a>
+                <a href="#chatbot-area" class="hover:text-blue-600 transition-colors">Chat with 小八</a>
+                <a href="#message-area" class="hover:text-blue-600 transition-colors">留言</a>
             </div>
-            <button class="md:hidden text-gray-600 focus:outline-none" id="mobileMenuButton" aria-label="导航菜单">
+            <button class="md:hidden focus:outline-none" id="mobileMenuButton" aria-label="导航菜单">
                 <i class="fas fa-bars text-xl"></i>
             </button>
 
             <div class="mobile-menu md:hidden" id="mobileMenu">
-                <a href="#home" class="block py-2 px-3 text-gray-600 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50 flex items-center"><i class="fas fa-home mr-3 text-blue-500 w-5 text-center"></i>首页</a>
+                <a href="#top-of-page" class="block py-2 px-3 text-gray-600 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50 flex items-center"><i class="fas fa-home mr-3 text-blue-500 w-5 text-center"></i>首页</a>
                 <a href="#memory-area" class="block py-2 px-3 text-gray-600 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50 flex items-center"><i class="fas fa-images mr-3 text-blue-500 w-5 text-center"></i>回忆</a>
                 <a href="#tool-area" class="block py-2 px-3 text-gray-600 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50 flex items-center"><i class="fas fa-tools mr-3 text-blue-500 w-5 text-center"></i>工具</a>
                 <a href="#chatbot-area" class="block py-2 px-3 text-gray-600 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50 flex items-center"><i class="fas fa-robot mr-3 text-blue-500 w-5 text-center"></i>Chat with 小八</a>
@@ -305,13 +484,15 @@
         </div>
     </nav>
 
-    <!-- 首页 -->
-    <section id="home" class="container mx-auto py-16 px-4 md:px-8 relative">
-        <div class="max-w-4xl mx-auto text-center">
+    <!-- 英雄区 (首页 - 第一眼看到的内容) -->
+    <div id="hero-section">
+        <!-- 背景图片通过 #fixed-background div 处理，这里不再需要 img 标签 -->
+        
+        <div id="hero-content" class="max-w-4xl mx-auto">
             <h1 class="text-4xl md:text-5xl font-bold mb-6">
                 <span class="highlight-text">八贤渡·敬业舟</span>
             </h1>
-            <p class="text-xl md:text-2xl text-gray-700 mb-8">从此岸到彼岸，八班风采依旧</p>
+            <p class="text-xl md:text-2xl mb-8">从此岸到彼岸，八班风采依旧</p>
             <div class="flex flex-wrap justify-center gap-4">
                 <a href="#memory-area" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors text-lg font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                     <i class="fas fa-images mr-2"></i>回忆
@@ -327,10 +508,22 @@
                 </a>
             </div>
         </div>
-    </section>
+        <!-- 向下滚动箭头 -->
+        <i id="scrollDownArrow" class="fas fa-chevron-down scroll-down-arrow"></i>
+    </div>
+
+    <!-- 首页介绍内容 (原home section，现在作为第一个通过滚动显现的区块) -->
+    <section id="intro-content" class="container mx-auto py-16 px-4 md:px-8 content-section">
+    <div class="max-w-4xl mx-auto text-center">
+        <p class="text-xl md:text-2xl text-white mb-8" style="text-shadow: 0 2px 8px rgba(0,0,0,0.5);">
+            <!-- 直接添加 text-white 类，并内联 text-shadow -->
+            纪念敬业中学2025届八班，我们共同的青春岁月。
+        </p>
+    </div>
+</section>
 
     <!-- 回忆 -->
-    <section id="memory-area" class="container mx-auto py-12 px-4 md:px-8">
+    <section id="memory-area" class="container mx-auto py-12 px-4 md:px-8 content-section">
         <div class="glassmorphism p-6 md:p-8 mb-16">
             <h2 class="text-3xl font-bold mb-8 flex items-center text-gray-800">
                 <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white mr-4 shadow-lg">
@@ -423,7 +616,7 @@
     </section>
 
     <!-- 工具 -->
-    <section id="tool-area" class="container mx-auto py-12 px-4 md:px-8">
+    <section id="tool-area" class="container mx-auto py-12 px-4 md:px-8 content-section">
         <div class="glassmorphism p-6 md:p-8 mb-16">
             <h2 class="text-3xl font-bold mb-8 flex items-center text-gray-800">
                 <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center text-white mr-4 shadow-lg">
@@ -451,27 +644,27 @@
             </div>
 
             <!-- 休闲助手主卡片 -->
-            <div id="academicHelperCard" class="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 rounded-xl shadow-xl cursor-pointer enhanced-card-hover mb-6 text-white flex items-center justify-between">
+            <div id="recreationHelperCard" class="bg-gradient-to-br from-red-500 to-orange-600 p-6 rounded-xl shadow-xl cursor-pointer enhanced-card-hover mb-6 text-white flex items-center justify-between mt-8">
                 <div>
                     <h3 class="text-2xl font-semibold mb-2 flex items-center">
-                        <i class="fas fa-graduation-cap mr-3"></i>休闲助手
+                        <i class="fas fa-gamepad mr-3"></i>休闲助手
                     </h3>
                     <p class="text-indigo-100">为你的课业闲暇添点趣味——点击展开休闲工具集。</p>
                 </div>
-                <i id="toolsToggleIcon" class="fas fa-chevron-down text-2xl transition-transform duration-300"></i>
+                <i id="recreationToolsToggleIcon" class="fas fa-chevron-down text-2xl transition-transform duration-300"></i>
             </div>
 
-            <!-- 工具卡片网格 (Bento Grid style, initially hidden) -->
-            <div id="toolsGridContainer" class="tools-grid-container">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="toolsGrid">
-                    <!-- Tool cards will be injected here by JavaScript -->
+            <!-- 休闲工具卡片网格 (Bento Grid style, initially hidden) -->
+            <div id="recreationToolsGridContainer" class="tools-grid-container">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="recreationToolsGrid">
+                    <!-- Recreation Tool cards will be injected here by JavaScript -->
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Chat with 小八区 -->
-    <section id="chatbot-area" class="container mx-auto py-12 px-4 md:px-8">
+    <section id="chatbot-area" class="container mx-auto py-12 px-4 md:px-8 content-section">
         <div class="glassmorphism p-6 md:p-8 mb-16">
             <h2 class="text-3xl font-bold mb-8 flex items-center text-gray-800">
                 <div class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center text-white mr-4 shadow-lg">
@@ -531,7 +724,7 @@
     </div>
 
     <!-- 留言 (仅保留弹幕区) -->
-    <section id="message-area" class="container mx-auto py-12 px-4 md:px-8">
+    <section id="message-area" class="container mx-auto py-12 px-4 md:px-8 content-section">
         <div class="glassmorphism p-6 md:p-8 mb-16">
             <h2 class="text-3xl font-bold mb-8 flex items-center text-gray-800">
                 <div class="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-white mr-4 shadow-lg">
@@ -586,14 +779,131 @@
     </footer>
 
     <script>
-        // -----------------------------------------------------------------------------
-        // 移动端导航菜单切换 (Existing)
-        // -----------------------------------------------------------------------------
         document.addEventListener('DOMContentLoaded', function() {
-            const menuButton = document.getElementById('mobileMenuButton');
+            // -----------------------------------------------------------------------------
+            // 全局元素获取
+            // -----------------------------------------------------------------------------
+            const mainNav = document.getElementById('mainNav');
+            const heroSection = document.getElementById('hero-section');
+            const fixedBackground = document.getElementById('fixed-background'); // 获取固定背景元素
+            const contentSections = document.querySelectorAll('.content-section');
+            const scrollDownArrow = document.getElementById('scrollDownArrow');
+            const mobileMenuButton = document.getElementById('mobileMenuButton');
             const mobileMenu = document.getElementById('mobileMenu');
 
-            menuButton.addEventListener('click', function() {
+            // -----------------------------------------------------------------------------
+            // 背景图片随机选择和固定 (New)
+            // -----------------------------------------------------------------------------
+            const desktopImages = [
+                "https://i.miji.bid/2025/06/04/7fdeeeb52e2ba2aca0c76e23a1d54bbe.jpeg",
+                "https://i.miji.bid/2025/06/04/c572e1bd26b13fffb68e0cfd9b198fc6.png",
+                "https://i.miji.bid/2025/06/04/e22635b4242570eb151695b295c2bf87.jpeg",
+                "https://i.miji.bid/2025/06/04/9505bd25461c4282b67ed682d922d908.jpeg"
+            ];
+
+            const mobileImages = [
+                "https://i.miji.bid/2025/06/04/9da590620de6f96c3ac255d00d1fbde5.jpeg",
+                "https://i.miji.bid/2025/06/04/03ba246a4afedfc4af676b63de03270e.jpeg",
+                "https://i.miji.bid/2025/06/04/b17575039ee4f88ef94cc0003cbc7b42.jpeg",
+                "https://i.miji.bid/2025/06/04/ac820b57dabf0f473c742ca5c0738beb.jpeg"
+            ];
+
+            function setHeroBackgroundImage() {
+                const isMobile = window.innerWidth <= 768; // Adjust breakpoint as needed
+                const images = isMobile ? mobileImages : desktopImages;
+                const randomIndex = Math.floor(Math.random() * images.length);
+                const selectedImage = images[randomIndex];
+
+                // 设置 fixed-background 元素的背景图片
+                if (fixedBackground) {
+                    fixedBackground.style.backgroundImage = `url('${selectedImage}')`;
+                } else {
+                    console.error("Fixed background element not found!");
+                }
+            }
+            setHeroBackgroundImage(); // 页面加载时调用一次
+
+            // -----------------------------------------------------------------------------
+            // 导航条与内容区显示逻辑 (Existing, adjusted)
+            // -----------------------------------------------------------------------------
+            // 初始状态：导航条透明，内容区隐藏（Intersection Observer会使其显现）
+            mainNav.classList.add('nav-initial');
+            function setNavColors(isInitial) {
+                const titleDiv = mainNav.querySelector('.text-xl.font-bold');
+                const navLinks = mainNav.querySelectorAll('a');
+                const mobileBtn = mainNav.querySelector('#mobileMenuButton');
+
+                if (isInitial) {
+                    // 强制导航栏标题和链接为白色，并取消文字渐变剪裁
+                    titleDiv.style.backgroundImage = 'none';
+                    titleDiv.style.webkitBackgroundClip = 'initial';
+                    titleDiv.style.webkitTextFillColor = 'white';
+                    titleDiv.style.color = 'white'; // Fallback for non-webkit browsers
+
+                    navLinks.forEach(link => link.style.color = 'white');
+                    if (mobileBtn) mobileBtn.style.color = 'white';
+                } else {
+                    // 恢复默认 Tailwind 样式，让 Tailwind 类的渐变和颜色接管
+                    titleDiv.style.backgroundImage = ''; 
+                    titleDiv.style.webkitBackgroundClip = '';
+                    titleDiv.style.webkitTextFillColor = '';
+                    titleDiv.style.color = ''; // 移除style属性，让tailwind class生效
+
+                    navLinks.forEach(link => link.style.color = ''); // 移除style属性
+                    if (mobileBtn) mobileBtn.style.color = ''; // 移除style属性
+                }
+            }
+            setNavColors(true); // 页面加载时立即设置导航条初始颜色
+
+            contentSections.forEach(section => {
+                section.classList.remove('fade-in'); // 确保初始状态没有 fade-in
+            });
+
+            // 滚动监听器：控制导航条显隐
+            // 当滚动距离超过英雄区高度的一半时，导航条变为实体
+            window.addEventListener('scroll', function() {
+                const scrollThreshold = heroSection ? heroSection.clientHeight * 0.5 : 200; // 默认200px作为阈值
+                if (window.scrollY > scrollThreshold) {
+                    mainNav.classList.remove('nav-initial');
+                    mainNav.classList.add('nav-scrolled');
+                    setNavColors(false); // 滚动后恢复默认颜色
+                } else {
+                    mainNav.classList.remove('nav-scrolled');
+                    mainNav.classList.add('nav-initial');
+                    setNavColors(true); // 回到顶部区域时设为初始颜色
+                }
+            });
+
+            // Intersection Observer：优雅地展示内容区（滚动时淡入和滚出）
+            const contentObserverOptions = {
+                root: null, // 视口作为根
+                rootMargin: '0px',
+                threshold: 0.1 // 当元素10%进入视口时触发
+            };
+
+            const contentObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('fade-in');
+                        // 可以选择只播放一次动画，然后取消观察
+                        // observer.unobserve(entry.target); 
+                    } else {
+                        // 如果需要滚动出视口时再次隐藏动画效果，则取消注释
+                        // entry.target.classList.remove('fade-in'); 
+                    }
+                });
+            }, contentObserverOptions);
+
+            // 观察所有内容区
+            contentSections.forEach(section => {
+                contentObserver.observe(section);
+            });
+
+
+            // -----------------------------------------------------------------------------
+            // 移动端导航菜单切换 (Existing, adjusted)
+            // -----------------------------------------------------------------------------
+            mobileMenuButton.addEventListener('click', function() {
                 mobileMenu.classList.toggle('active');
                 const icon = this.querySelector('i');
                 if (mobileMenu.classList.contains('active')) {
@@ -605,37 +915,67 @@
                 }
             });
 
-            // 平滑滚动 (Existing)
+            // 平滑滚动 (Existing, adjusted for new anchors)
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
                     e.preventDefault();
-                    const targetElement = document.querySelector(this.getAttribute('href'));
-                    if (targetElement) {
-                        targetElement.scrollIntoView({
+                    const targetId = this.getAttribute('href');
+                    
+                    if (targetId === '#top-of-page' || targetId === '#') { // 点击"首页"或通用顶部链接
+                        window.scrollTo({
+                            top: 0,
                             behavior: 'smooth'
                         });
+                    } else {
+                        const targetElement = document.querySelector(targetId);
+                        if (targetElement) {
+                            targetElement.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start' // 滚动到元素的顶部
+                            });
+                        }
                     }
+                    
                     // 点击导航链接后关闭移动端菜单
                     if (mobileMenu.classList.contains('active')) {
                         mobileMenu.classList.remove('active');
-                        const icon = menuButton.querySelector('i');
+                        const icon = mobileMenuButton.querySelector('i');
                         icon.classList.remove('fa-times');
                         icon.classList.add('fa-bars');
                     }
                 });
             });
-        });
 
-        // -----------------------------------------------------------------------------
-        // 工具功能 (Tool Area Functionality - NEW)
-        // -----------------------------------------------------------------------------
-        document.addEventListener('DOMContentLoaded', function() {
+            // 英雄区向下滚动箭头 (New)
+            if (scrollDownArrow) {
+                scrollDownArrow.addEventListener('click', function() {
+                    const firstContentSection = document.getElementById('intro-content'); // 滚动到第一个内容区块
+                    if (firstContentSection) {
+                        firstContentSection.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            }
+
+
+            // -----------------------------------------------------------------------------
+            // 工具功能 (Tool Area Functionality - Existing, adapted for two tool grids)
+            // -----------------------------------------------------------------------------
             const academicHelperCard = document.getElementById('academicHelperCard');
             const toolsGridContainer = document.getElementById('toolsGridContainer');
             const toolsToggleIcon = document.getElementById('toolsToggleIcon');
             const toolsGrid = document.getElementById('toolsGrid');
 
-            const toolsData = [
+            const recreationHelperCard = document.getElementById('recreationHelperCard'); // 新增休闲助手卡片
+            const recreationToolsGridContainer = document.getElementById('recreationToolsGridContainer');
+            const recreationToolsToggleIcon = document.getElementById('recreationToolsToggleIcon');
+            const recreationToolsGrid = document.getElementById('recreationToolsGrid');
+
+
+            // 学术工具数据
+            const academicToolsData = [
                 { name: 'DeepSeek', description: '免费 AI 写作辅助工具', link: 'https://www.deepseek.com/', icon: 'fas fa-search-plus' },
                 { name: 'SurveyGO', description: '清华 NLP 组 AI 问卷生成器', link: 'https://surveygo.modelbest.cn/', icon: 'fas fa-poll-h' },
                 { name: 'Mendeley', description: '学术参考文献管理工具', link: 'https://www.mendeley.com/', icon: 'fas fa-book-reader' },
@@ -648,10 +988,23 @@
                 { name: 'Hugging Face', description: 'AI模型与数据集开放平台', link: 'https://huggingface.co/', icon: 'fas fa-brain' }
             ];
 
-            // Function to create and append tool cards
-            function populateToolsGrid() {
-                toolsGrid.innerHTML = ''; // Clear existing tools if any
-                toolsData.forEach(tool => {
+            // 休闲工具数据
+            const recreationToolsData = [
+                { name: 'Steam', description: 'PC游戏平台，探索无限游戏乐趣', link: 'https://store.steampowered.com/', icon: 'fab fa-steam' },
+                { name: '网易云音乐', description: '听歌，看评论，发现同好', link: 'https://music.163.com/', icon: 'fas fa-music' },
+                { name: '哔哩哔哩', description: '看番剧、学习、鬼畜，应有尽有', link: 'https://www.bilibili.com/', icon: 'fas fa-tv' },
+                { name: 'Pixiv', description: '二次元插画艺术社区', link: 'https://www.pixiv.net/', icon: 'fas fa-palette' },
+                { name: 'Dribbble', description: '设计师作品分享与灵感获取', link: 'https://dribbble.com/', icon: 'fas fa-drafting-compass' },
+                { name: '斗鱼直播', description: '游戏直播，互动娱乐', link: 'https://www.douyu.com/', icon: 'fas fa-gamepad' },
+                { name: '豆瓣电影', description: '电影、图书、音乐评分与评论', link: 'https://movie.douban.com/', icon: 'fas fa-film' },
+                { name: '知乎', description: '有问题，上知乎', link: 'https://www.zhihu.com/', icon: 'fab fa-zhihu' }
+            ];
+
+            // 创建并填充工具卡片的通用函数
+            function populateToolsGrid(gridElement, toolsArray) {
+                if (!gridElement) return;
+                gridElement.innerHTML = ''; // 清空现有工具（如果有）
+                toolsArray.forEach(tool => {
                     const cardHtml = `
                         <div class="bg-white/70 backdrop-blur-sm p-5 rounded-xl shadow-lg enhanced-card-hover border border-gray-200/80 flex flex-col justify-between">
                             <div>
@@ -667,35 +1020,40 @@
                             </a>
                         </div>
                     `;
-                    toolsGrid.innerHTML += cardHtml; // Directly append HTML string
+                    gridElement.innerHTML += cardHtml; // 直接追加 HTML 字符串
                 });
             }
 
+            // 学术助手逻辑
             if (academicHelperCard && toolsGridContainer && toolsToggleIcon && toolsGrid) {
-                populateToolsGrid(); // Populate tools on load
+                populateToolsGrid(toolsGrid, academicToolsData); // 页面加载时填充学术工具
 
                 academicHelperCard.addEventListener('click', () => {
                     toolsGridContainer.classList.toggle('active');
                     toolsToggleIcon.classList.toggle('fa-chevron-down');
                     toolsToggleIcon.classList.toggle('fa-chevron-up');
-                    // Optional: Scroll to the tools grid if it's opened and off-screen
-                    if (toolsGridContainer.classList.contains('active')) {
-                        // A slight delay for the animation to start
-                        setTimeout(() => {
-                           // toolsGridContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                        }, 100);
-                    }
                 });
             } else {
-                console.error("Tool area elements not found.");
+                console.error("学术工具区元素未找到。");
             }
-        });
+
+            // 休闲助手逻辑 (新增加的部分)
+            if (recreationHelperCard && recreationToolsGridContainer && recreationToolsToggleIcon && recreationToolsGrid) {
+                populateToolsGrid(recreationToolsGrid, recreationToolsData); // 页面加载时填充休闲工具
+
+                recreationHelperCard.addEventListener('click', () => {
+                    recreationToolsGridContainer.classList.toggle('active');
+                    recreationToolsToggleIcon.classList.toggle('fa-chevron-down');
+                    recreationToolsToggleIcon.classList.toggle('fa-chevron-up');
+                });
+            } else {
+                console.error("休闲工具区元素未找到。");
+            }
 
 
-        // -----------------------------------------------------------------------------
-        // Chat with 小八 功能 (Vercel Functions 代理集成 - NEW)
-        // -----------------------------------------------------------------------------
-        document.addEventListener('DOMContentLoaded', function() {
+            // -----------------------------------------------------------------------------
+            // Chat with 小八 功能 (Vercel Functions 代理集成 - Existing)
+            // -----------------------------------------------------------------------------
             const chatMessages = document.getElementById('chatMessages'); // 小窗口
             const chatInput = document.getElementById('chatInput');
             const chatSendButton = document.getElementById('chatSendButton');
@@ -724,8 +1082,6 @@
             const chatModelConfigs = {
                 domestic_normal: {
                     name: "普通小八 (国内版)",
-                    // baseURL 指向 SiliconCloud，因为 Vercel Function 只代理 tiu.me 的 API
-                    // 如果国内模型也需要代理，需要再写一个 proxy
                     baseURL: "https://api.siliconflow.cn/v1/chat/completions",
                     model: "Qwen/Qwen2.5-72B-Instruct-128K", // Qwen 模型
                     apiKey: "sk-nfvdgwtiswofnqmlekvnsufhrjaekjtrwybhdhiuzrwprlcn", // 国内模型的 Key 依然在前端，注意安全
@@ -749,7 +1105,7 @@
                     apiKey: DUMMY_API_KEY_FRONTEND, // <-- API Key 不在前端使用
                     isInternal: false,
                     supportsSystemRole: true,
-                    endpointIsProxy: true // 这个 API 是通过代理调用的
+                    endpointIsProxy: true
                 },
                 international_inference: {
                     name: "推理小八 (国际版)",
@@ -1053,7 +1409,7 @@
         });
 
         // -----------------------------------------------------------------------------
-        // 弹幕区功能 (Danmaku Functionality - NEW)
+        // 弹幕区功能 (Danmaku Functionality - Existing)
         // -----------------------------------------------------------------------------
         document.addEventListener('DOMContentLoaded', function() {
             const danmakuContainer = document.getElementById('danmakuContainer');
