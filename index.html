@@ -433,21 +433,114 @@
             transform: translateY(0); /* Move to final position */
         }
 
-        /* Adjust button styles for hero section to match light background */
-        #hero-content .bg-blue-500,
-        #hero-content .bg-purple-500,
-        #hero-content .bg-green-500,
-        #hero-content .bg-orange-500 {
-            background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent white buttons */
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            color: white; /* White text for buttons */
+        /* Adjust button styles for hero section to match the glassmorphism buttons */
+        #hero-content a.bg-blue-500, /* 更具体的选择器，确保只修改 hero content 下的按钮 */
+        #hero-content a.bg-indigo-500, /* 确保也覆盖同学录按钮 */
+        #hero-content a.bg-purple-500,
+        #hero-content a.bg-green-500,
+        #hero-content a.bg-orange-500 {
+            /* 直接引用 glassmorphism 效果的背景和边框 */
+            background: rgba(255, 255, 255, 0.2); /* 比 glassmorphism 主体更低的透明度，与截图一致 */
+            backdrop-filter: blur(5px); /* 可以是更弱的模糊效果 */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* 与 glassmorphism 边框一致 */
+            box-shadow: 0 4px 16px 0 rgba(31, 38, 135, 0.1); /* 较弱的阴影 */
+            color: white; /* 确保文字是白色 */
             transition: all 0.3s ease;
         }
-        /* Hover styles for these buttons */
-        #hero-content .bg-blue-500:hover { background-color: rgba(59, 130, 246, 0.6); border-color: rgba(59, 130, 246, 0.8); }
-        #hero-content .bg-purple-500:hover { background-color: rgba(168, 85, 247, 0.6); border-color: rgba(168, 85, 247, 0.8); }
-        #hero-content .bg-green-500:hover { background-color: rgba(34, 197, 94, 0.6); border-color: rgba(34, 197, 94, 0.8); }
-        #hero-content .bg-orange-500:hover { background-color: rgba(249, 115, 22, 0.6); border-color: rgba(249, 115, 22, 0.8); }
+
+        /* 悬停效果：保持白色文字，背景颜色可以加深透明度，或保留与背景按钮一致 */
+        #hero-content a.bg-blue-500:hover,
+        #hero-content a.bg-indigo-500:hover,
+        #hero-content a.bg-purple-500:hover,
+        #hero-content a.bg-green-500:hover,
+        #hero-content a.bg-orange-500:hover {
+            background: rgba(255, 255, 255, 0.3); /* 悬停时稍微加深透明度 */
+            box-shadow: 0 8px 24px 0 rgba(31, 38, 135, 0.2); /* 悬停时阴影加深 */
+            transform: translateY(-3px); /* 维持悬停上移效果 */
+            border-color: rgba(255, 255, 255, 0.5); /* 悬停时边框更亮 */
+        }
+
+        /* 同学录专属样式 */
+        .classmate-card {
+            cursor: pointer;
+            position: relative;
+            overflow: hidden; /* Hide anything outside the card */
+        }
+        .classmate-card .avatar {
+            width: 80px; /* Adjust as needed */
+            height: 80px;
+            background-color: #6366f1; /* default indigo for avatars */
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px; /* full rounded */
+            margin-bottom: 0.5rem;
+            flex-shrink: 0; /* Prevent avatar from shrinking */
+            user-select: none; /* Prevent selection */
+        }
+        /* 同学详情模态框的特定样式 */
+        .classmate-detail-content {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            animation: fadeInScale 0.3s ease-out;
+        }
+        .classmate-detail-content .avatar-large {
+            width: 120px;
+            height: 120px;
+            background-color: #6366f1;
+            color: white;
+            font-size: 3.5rem;
+            font-weight: bold;
+            border-radius: 9999px;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            flex-shrink: 0;
+        }
+        .classmate-detail-content h3 {
+            font-size: 2.25rem;
+            font-weight: bold;
+            color: #1f2937;
+            text-align: center;
+            margin-bottom: 0.75rem;
+        }
+        .classmate-detail-content p {
+            color: #4b5563;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        .classmate-detail-content p strong {
+            color: #1f2937;
+        }
+        .classmate-detail-content .quote {
+            font-style: italic;
+            border-left: 4px solid #a78bfa; /* purple-400 */
+            padding-left: 1rem;
+            margin-top: 1.5rem;
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal.open .classmate-detail-content {
+            animation: fadeInScale 0.3s ease-out forwards;
+        }
+
     </style>
 </head>
 <body class="min-h-screen">
@@ -466,6 +559,7 @@
             <div class="hidden md:flex space-x-6">
                 <a href="#top-of-page" class="hover:text-blue-600 transition-colors">首页</a>
                 <a href="#memory-area" class="hover:text-blue-600 transition-colors">回忆</a>
+                <a href="#classmates-area" class="hover:text-blue-600 transition-colors">同学录</a> <!-- 新增导航链接 -->
                 <a href="#tool-area" class="hover:text-blue-600 transition-colors">工具</a>
                 <a href="#chatbot-area" class="hover:text-blue-600 transition-colors">Chat with 小八</a>
                 <a href="#message-area" class="hover:text-blue-600 transition-colors">留言</a>
@@ -477,6 +571,7 @@
             <div class="mobile-menu md:hidden" id="mobileMenu">
                 <a href="#top-of-page" class="block py-2 px-3 text-gray-600 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50 flex items-center"><i class="fas fa-home mr-3 text-blue-500 w-5 text-center"></i>首页</a>
                 <a href="#memory-area" class="block py-2 px-3 text-gray-600 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50 flex items-center"><i class="fas fa-images mr-3 text-blue-500 w-5 text-center"></i>回忆</a>
+                <a href="#classmates-area" class="block py-2 px-3 text-gray-600 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50 flex items-center"><i class="fas fa-users mr-3 text-blue-500 w-5 text-center"></i>同学录</a> <!-- 新增导航链接 -->
                 <a href="#tool-area" class="block py-2 px-3 text-gray-600 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50 flex items-center"><i class="fas fa-tools mr-3 text-blue-500 w-5 text-center"></i>工具</a>
                 <a href="#chatbot-area" class="block py-2 px-3 text-gray-600 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50 flex items-center"><i class="fas fa-robot mr-3 text-blue-500 w-5 text-center"></i>Chat with 小八</a>
                 <a href="#message-area" class="block py-2 px-3 text-gray-600 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50 flex items-center"><i class="fas fa-comment-dots mr-3 text-blue-500 w-5 text-center"></i>留言</a>
@@ -496,6 +591,9 @@
             <div class="flex flex-wrap justify-center gap-4">
                 <a href="#memory-area" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors text-lg font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                     <i class="fas fa-images mr-2"></i>回忆
+                </a>
+                <a href="#classmates-area" class="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-3 rounded-lg transition-colors text-lg font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                    <i class="fas fa-users mr-2"></i>同学录
                 </a>
                 <a href="#tool-area" class="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg transition-colors text-lg font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                     <i class="fas fa-tools mr-2"></i>工具
@@ -615,6 +713,21 @@
         </div>
     </section>
 
+    <!-- 同学录 -->
+    <section id="classmates-area" class="container mx-auto py-12 px-4 md:px-8 content-section">
+        <div class="glassmorphism p-6 md:p-8 mb-16">
+            <h2 class="text-3xl font-bold mb-8 flex items-center text-gray-800">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white mr-4 shadow-lg">
+                    <i class="fas fa-users text-xl"></i>
+                </div>
+                同学录
+            </h2>
+            <div id="classmateCardsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                <!-- 同学卡片将由 JavaScript 动态生成 -->
+            </div>
+        </div>
+    </section>
+
     <!-- 工具 -->
     <section id="tool-area" class="container mx-auto py-12 px-4 md:px-8 content-section">
         <div class="glassmorphism p-6 md:p-8 mb-16">
@@ -722,6 +835,17 @@
             <p id="modalChatError" class="text-red-500 text-xs mt-2 h-4"></p>
         </div>
     </div>
+
+    <!-- 同学详情模态框 -->
+    <div id="classmateDetailModal" class="modal">
+        <div class="classmate-detail-content">
+            <span class="modal-close" id="closeClassmateDetailModalButton">×</span>
+            <div id="classmateDetailContentBody">
+                <!-- 同学详细信息将在此处动态加载 -->
+            </div>
+        </div>
+    </div>
+
 
     <!-- 留言 (仅保留弹幕区) -->
     <section id="message-area" class="container mx-auto py-12 px-4 md:px-8 content-section">
@@ -1405,6 +1529,162 @@
                 });
             } else {
                 console.error("Modal chat elements not found.");
+            }
+        });
+
+        // -----------------------------------------------------------------------------
+        // 同学录功能 (New)
+        // -----------------------------------------------------------------------------
+        document.addEventListener('DOMContentLoaded', function() {
+            const classmateCardsGrid = document.getElementById('classmateCardsGrid');
+            const classmateDetailModal = document.getElementById('classmateDetailModal');
+            const closeClassmateDetailModalButton = document.getElementById('closeClassmateDetailModalButton');
+            const classmateDetailContentBody = document.getElementById('classmateDetailContentBody');
+
+            // 同学数据 - **请替换为你们班级的真实数据！**
+            // 注意：手机号和邮箱等敏感信息请谨慎录入，仅在班级内部严格限制访问或使用占位符。
+            const classmatesData = [
+                {
+                    name: "张三",
+                    avatarInitials: "ZS",
+                    studentId: "202508001",
+                    phone: "138-xxxx-xxxx", // 谨慎录入，可改为 "(暂未录入)" 或 "(联系班长获取)"
+                    email: "zhangsan@example.com", // 谨慎录入
+                    message: "祝大家前程似锦，顶峰相见！"
+                },
+                {
+                    name: "李四",
+                    avatarInitials: "LS",
+                    studentId: "202508002",
+                    phone: "(暂未录入)",
+                    email: "(暂未录入)",
+                    message: "时光不老，我们不散！"
+                },
+                {
+                    name: "王五",
+                    avatarInitials: "WW",
+                    studentId: "202508003",
+                    phone: "139-xxxx-xxxx",
+                    email: "wangwu@example.com",
+                    message: "保持热爱，奔赴山海！"
+                },
+                {
+                    name: "赵六",
+                    avatarInitials: "ZL",
+                    studentId: "202508004",
+                    phone: "(暂未录入)",
+                    email: "(暂未录入)",
+                    message: "毕业快乐！希望大家都能找到自己喜欢的人生道路！"
+                },
+                {
+                    name: "钱七",
+                    avatarInitials: "QQ",
+                    studentId: "202508005",
+                    phone: "(暂未录入)",
+                    email: "(暂未录入)",
+                    message: "高中三年，回忆满满，期待大学的精彩生活！"
+                },
+                {
+                    name: "孙八",
+                    avatarInitials: "SB",
+                    studentId: "202508006",
+                    phone: "(暂未录入)",
+                    email: "(暂未录入)",
+                    message: "友谊长存，常联系！"
+                },
+                {
+                    name: "周九",
+                    avatarInitials: "ZJ",
+                    studentId: "202508007",
+                    phone: "(暂未录入)",
+                    email: "(暂未录入)",
+                    message: "毕业快乐，前程似锦！"
+                },
+                {
+                    name: "吴十",
+                    avatarInitials: "WS",
+                    studentId: "202508008",
+                    phone: "(暂未录入)",
+                    email: "(暂未录入)",
+                    message: "人生有梦，一起做梦！"
+                },
+                {
+                    name: "李十一",
+                    avatarInitials: "LSY",
+                    studentId: "202508009",
+                    phone: "(暂未录入)",
+                    email: "(暂未录入)",
+                    message: "永远是八班的崽！"
+                },
+                {
+                    name: "陈十二",
+                    avatarInitials: "CSE",
+                    studentId: "202508010",
+                    phone: "(暂未录入)",
+                    email: "(暂未录入)",
+                    message: "未来可期，加油干饭人！"
+                },
+            ];
+
+            // 创建并填充同学卡片
+            function populateClassmateCards() {
+                if (!classmateCardsGrid) return;
+                classmateCardsGrid.innerHTML = ''; // 清空现有卡片
+                classmatesData.forEach(classmate => {
+                    const cardDiv = document.createElement('div');
+                    cardDiv.classList.add('bg-white/70', 'backdrop-blur-sm', 'p-4', 'rounded-xl', 'shadow-lg', 'classmate-card', 'enhanced-card-hover', 'text-center', 'flex', 'flex-col', 'items-center', 'justify-center');
+                    
+                    const avatarHtml = `
+                        <div class="avatar bg-indigo-500">
+                            ${classmate.avatarInitials}
+                        </div>
+                    `;
+                    const nameHtml = `<h4 class="text-xl font-semibold text-gray-800">${classmate.name}</h4>`;
+
+                    cardDiv.innerHTML = avatarHtml + nameHtml;
+
+                    cardDiv.addEventListener('click', () => showClassmateDetailModal(classmate));
+                    classmateCardsGrid.appendChild(cardDiv);
+                });
+            }
+
+            // 显示同学详情模态框
+            function showClassmateDetailModal(classmate) {
+                if (!classmateDetailModal || !classmateDetailContentBody) return;
+
+                classmateDetailContentBody.innerHTML = `
+                    <div class="avatar-large bg-blue-600">
+                        ${classmate.avatarInitials}
+                    </div>
+                    <h3>${classmate.name}</h3>
+                    <p><strong>学号：</strong>${classmate.studentId}</p>
+                    <p><strong>手机号：</strong>${classmate.phone}</p>
+                    <p><strong>邮箱：</strong>${classmate.email}</p>
+                    <p class="quote">"${classmate.message}"</p>
+                `;
+                classmateDetailModal.classList.add('open');
+            }
+
+            // 关闭同学详情模态框
+            function closeClassmateDetailModal() {
+                if (classmateDetailModal) {
+                    classmateDetailModal.classList.remove('open');
+                }
+            }
+
+            // 监听器
+            if (classmateCardsGrid && classmateDetailModal && closeClassmateDetailModalButton) {
+                populateClassmateCards(); // 页面加载时填充同学卡片
+
+                closeClassmateDetailModalButton.addEventListener('click', closeClassmateDetailModal);
+                window.addEventListener('click', (event) => {
+                    // 点击模态框内容以外的区域关闭
+                    if (event.target == classmateDetailModal) {
+                        closeClassmateDetailModal();
+                    }
+                });
+            } else {
+                console.error("同学录相关元素未找到。");
             }
         });
 
