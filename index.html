@@ -287,6 +287,12 @@
             filter: brightness(0.6) saturate(1.2); /* 背景滤镜，不影响UI */
             transition: background-image 0.5s ease-in-out; /* 图片切换动画 */
             background-color: #1a202c; /* 作为图片加载前的fallback色 */
+            
+            /* 解决移动端固定背景闪烁问题 */
+            -webkit-backface-visibility: hidden; /* For iOS Safari */
+            backface-visibility: hidden;
+            transform: translateZ(0);            /* Force hardware acceleration */
+            will-change: transform;              /* Hint browser about future transformations */
         }
 
         /* New styles for Hero Section and Animations */
@@ -929,7 +935,7 @@
             // -----------------------------------------------------------------------------
             // 毕业计时器 (优化为增量式更新)
             // -----------------------------------------------------------------------------
-            const GRADUATION_DATE = new Date('2025-06-10T00:00:00'); // 毕业时间
+            const GRADUATION_DATE = new Date('2025-06-07T00:00:00'); // 毕业时间
             let initialTimeDiffMs = GRADUATION_DATE.getTime() - new Date().getTime(); // 初始的毫秒差
 
             function updateGraduationTimerOptimized() {
@@ -955,7 +961,7 @@
                 timerText += `${String(hours).padStart(2, '0')}小时 ${String(minutes).padStart(2, '0')}分钟 ${String(seconds).padStart(2, '0')}秒`;
 
                 if (isAfterGraduation) {
-                    graduationTimer.textContent = `毕业已过 ${timerText}`;
+                    graduationTimer.textContent = `离毕业已过 ${timerText}`;
                     graduationTimer.style.backgroundColor = 'rgba(255, 99, 71, 0.7)'; // 红色系表示已毕业
                 } else {
                     graduationTimer.textContent = `离毕业还有 ${timerText}`;
@@ -1201,7 +1207,7 @@
                             </a>
                         </div>
                     `;
-                    gridElement.innerHTML += cardHtml; // 直接追加 HTML 字符串
+                    gridElement.innerHTML += cardHtml; // Directly append HTML string
                 });
             }
 
@@ -1313,7 +1319,7 @@
             // 初始欢迎语
             const initialWelcomeMessage = {
                 role: "model",
-                parts: [{ text: "**你好呀同学**！我是咱们**敬业2025级八班**的专属小助手，**小八**~~\n\n（以后可能会变成中八/老八）\n\n我基于时下**最强大的大语言模型**，将会随着班级同学的维护**一直更新变强**，为同学们**永远服务**。\n\n未来，你可以来问我问题、做学术、参谋人生规划。**很高兴能为你们服务！**\n\n今天，有什么可以帮助你的吗？" }]
+                parts: [{ text: "**你好呀同学**！我是咱们**敬业2025级八班**的专属小助手，**小八**~~\n\n我基于时下**最强大的大语言模型**，将会随着班级同学的维护**一直更新变强**，为同学们**永远服务**。\n\n未来，你可以来问我问题、做学术、参谋人生规划。**很高兴能为你们服务！**\n\n今天，有什么可以帮助你的吗？" }]
             };
 
 
