@@ -8,6 +8,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <!-- 引入 Marked.js 用于 Markdown 渲染 -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- 新增：资源预连接，提高加载速度 -->
+    <link rel="preconnect" href="https://i.miji.bid">
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://ipinfo.io">
+    <link rel="preconnect" href="https://api.jsonbin.io">
+
     <style>
         /* Base styles */
         body {
@@ -547,11 +554,29 @@
             animation: fadeInScale 0.3s ease-out forwards;
         }
 
+        /* 新增 Loading Overlay Styles */
+        #loading-overlay {
+            /* Tailwind classes already handle most, but add explicit transition and pointer-events */
+            transition: opacity 0.5s ease-out; /* 半秒钟的渐隐动画 */
+        }
+        #loading-overlay.fade-out {
+            opacity: 0;
+            pointer-events: none; /* 元素淡出后，禁用其上的所有鼠标事件，让下层内容可点击 */
+        }
     </style>
 </head>
 <body class="min-h-screen">
     <!-- 新增：固定背景层，用于实现视差滚动效果 -->
     <div id="fixed-background"></div>
+
+    <!-- 新增：加载页面覆盖层 -->
+    <div id="loading-overlay" class="fixed inset-0 z-[2000] flex items-center justify-center bg-gray-900 transition-opacity duration-500 opacity-100">
+        <div class="text-center text-white">
+            <i class="fas fa-ship fa-spin text-6xl mb-4 text-blue-400"></i> <!-- 使用船只图标，配合主题 -->
+            <h2 class="text-2xl font-bold mb-2">八贤渡·敬业舟</h2>
+            <p class="text-lg">入港中...</p>
+        </div>
+    </div>
 
     <!-- Top of Page Anchor - 用于导航条的“首页”链接点击回到页面最顶端 -->
     <div id="top-of-page"></div>
@@ -1594,7 +1619,21 @@
             } else {
                 console.error("Modal chat elements not found.");
             }
-        });
+            // -----------------------------------------------------------------------------
+            // 加载页处理 (New)
+            // 确保在所有初始化逻辑（包括API调用和DOM填充）完成后再隐藏加载页
+            // -----------------------------------------------------------------------------
+            const loadingOverlay = document.getElementById('loading-overlay');
+            if (loadingOverlay) {
+                // 使用 setTimeout 确保浏览器有时间渲染 DOM 更新，防止过早移除
+                setTimeout(() => {
+                    loadingOverlay.classList.add('fade-out');
+                    loadingOverlay.addEventListener('transitionend', () => {
+                        loadingOverlay.remove(); // 动画结束后从 DOM 中移除元素
+                    }, { once: true }); // 确保事件监听器只执行一次
+                }, 500); // 延迟 500ms 启动动画，确保页面基本内容加载
+            }
+         });       
 
         // -----------------------------------------------------------------------------
         // 同学录功能 (New)
