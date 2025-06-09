@@ -10,10 +10,13 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- 新增：资源预连接，提高加载速度 -->
     <link rel="preconnect" href="https://i.miji.bid">
-    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <!-- <link rel="preconnect" href="https://cdn.tailwindcss.com"> 不再需要，因为使用本地outpu.css -->
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://ipinfo.io">
     <link rel="preconnect" href="https://api.jsonbin.io">
+    <link rel="preconnect" href="https://api.siliconflow.cn"> <!-- 如果国内模型直接调用 -->
+    <link rel="preconnect" href="https://your-vercel-domain.vercel.app"> <!-- 替换为你的Vercel项目域名，用于代理 -->
+
 
     <style>
         /* Base styles */
@@ -282,24 +285,25 @@
 
         /* 新增：固定背景层，实现视差滚动 */
         #fixed-background {
-            position: fixed; /* 固定在视口 */
-            top: 0;
+            /* 修正：这里不再使用 position: fixed，而是 position: absolute */
+            position: absolute; /* 修改为 absolute */
+            top: 0; /* 初始 top 为 0，JS 会更新 */
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1; /* 置于所有内容之下 */
-            background-size: cover; /* 覆盖整个区域 */
-            background-position: center; /* 居中 */
-            background-repeat: no-repeat; /* 不重复 */
-            filter: brightness(0.6) saturate(1.2); /* 背景滤镜，不影响UI */
-            transition: background-image 0.5s ease-in-out; /* 图片切换动画 */
-            background-color: #1a202c; /* 作为图片加载前的fallback色 */
+            z-index: -1;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: brightness(0.6) saturate(1.2);
+            transition: background-image 0.5s ease-in-out;
+            background-color: #1a202c;
             
-            /* 解决移动端固定背景闪烁问题 */
-            -webkit-backface-visibility: hidden; /* For iOS Safari */
-            backface-visibility: hidden;
-            transform: translateZ(0);            /* Force hardware acceleration */
-            will-change: transform;              /* Hint browser about future transformations */
+            /* 移除之前尝试的硬件加速属性，它们不适用于 position: absolute */
+            /* -webkit-backface-visibility: hidden; */
+            /* backface-visibility: hidden; */
+            /* transform: translateZ(0); */
+            /* will-change: transform; */
         }
 
         /* New styles for Hero Section and Animations */
@@ -1928,7 +1932,7 @@
 
                 const newDanmaku = { text, location, timestamp };
 
-                // 1. 从 JSONBin 读取现有数据
+                // 从 JSONBin 读取现有数据
                 try {
                     const response = await fetch(JSONBIN_URL + '/latest', {
                         headers: {
@@ -1945,10 +1949,10 @@
                         throw new Error(`Failed to read current records: ${response.statusText}`);
                     }
 
-                    // 2. 追加新弹幕到内存中的数组
+                    // 追加新弹幕到内存中的数组
                     currentRecords.push(newDanmaku);
 
-                    // 3. 更新 JSONBin (PUT操作会覆盖整个bin)
+                    // 更新 JSONBin (PUT操作会覆盖整个bin)
                     const updateResponse = await fetch(JSONBIN_URL, {
                         method: 'PUT',
                         headers: {
@@ -1963,10 +1967,10 @@
                     }
                     // console.log("Danmaku saved successfully!");
                     
-                    // 4. 将新弹幕添加到弹幕池中，使其可以立即滚动
+                    // 将新弹幕添加到弹幕池中，使其可以立即滚动
                     danmakuPool.push(newDanmaku);
                     
-                    // 5. 刷新历史记录显示
+                    // 刷新历史记录显示
                     fetchDanmakuRecords();
 
                 } catch (error) {
