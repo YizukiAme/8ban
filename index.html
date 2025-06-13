@@ -694,7 +694,7 @@
                 </div>
 
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                     <div>
                         <h3 class="text-xl font-semibold mb-4 text-gray-700">时间轴</h3>
                         <div class="space-y-6 relative pl-5 border-l-2 border-blue-200">
@@ -720,32 +720,25 @@
                                 </div>
                             </div>
                         </div>
+                    </div> -->
+
+                <!-- 找到这个 div -->
+                <div>
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">相册画廊</h3>
+                    
+                    <!-- ⬇️⬇️⬇️ 用下面的代码替换你原来的 grid ⬇️⬇️⬇️ -->
+                    <div id="photo-gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
+                        <!-- 照片将由 JavaScript 动态加载到这里 -->
+                        <p class="col-span-full text-center text-gray-500 py-8">正在加载照片...</p>
                     </div>
 
-                    <div>
-                        <h3 class="text-xl font-semibold mb-4 text-gray-700">相册画廊（占位图片ing）</h3>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            <!-- 占位图片，请替换为实际图片 -->
-                            <div class="aspect-square rounded-lg overflow-hidden shadow-md card-hover">
-                                <img src="https://source.unsplash.com/random/300x300?graduation,class,friends&sig=1" alt="班级活动照片 1" class="w-full h-full object-cover">
-                            </div>
-                            <div class="aspect-square rounded-lg overflow-hidden shadow-md card-hover">
-                                <img src="https://source.unsplash.com/random/300x300?graduation,class,friends&sig=2" alt="班级活动照片 2" class="w-full h-full object-cover">
-                            </div>
-                            <div class="aspect-square rounded-lg overflow-hidden shadow-md card-hover">
-                                <img src="https://source.unsplash.com/random/300x300?graduation,class,friends&sig=3" alt="班级活动照片 3" class="w-full h-full object-cover">
-                            </div>
-                            <div class="aspect-square rounded-lg overflow-hidden shadow-md card-hover">
-                                <img src="https://source.unsplash.com/random/300x300?graduation,class,friends&sig=4" alt="班级活动照片 4" class="w-full h-full object-cover">
-                            </div>
-                            <div class="aspect-square rounded-lg overflow-hidden shadow-md card-hover">
-                                <img src="https://source.unsplash.com/random/300x300?graduation,class,friends&sig=5" alt="班级活动照片 5" class="w-full h-full object-cover">
-                            </div>
-                            <div class="aspect-square rounded-lg overflow-hidden shadow-md card-hover">
-                                <img src="https://source.unsplash.com/random/300x300?graduation,class,friends&sig=6" alt="班级活动照片 6" class="w-full h-full object-cover">
-                            </div>
-                        </div>
+                    <div class="text-center">
+                        <button id="change-photos-button" class="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-2 rounded-lg transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                            <i class="fas fa-sync-alt mr-2"></i>换一批！
+                        </button>
                     </div>
+                    <!-- ⬆️⬆️⬆️ 替换到这里结束 ⬆️⬆️⬆️ -->
+
                 </div>
 
                 <div class="mb-8">
@@ -758,7 +751,7 @@
                 </div>
 
                 <div>
-                    <h3 class="text-xl font-semibold mb-4 text-gray-700">寄语卡片墙</h3>
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">师说</h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="bg-gradient-to-br from-blue-50 to-indigo-100 p-5 rounded-xl shadow-lg card-hover">
                             <p class="text-gray-700 text-sm leading-relaxed">"不要天天作业帮。"</p>
@@ -1967,6 +1960,71 @@
             } else {
                 console.error("Danmaku UI elements not found.");
             }
+                    // -----------------------------------------------------------------------------
+            // 相册画廊动态加载功能 (新增)
+            // -----------------------------------------------------------------------------
+            document.addEventListener('DOMContentLoaded', function() {
+                const galleryGrid = document.getElementById('photo-gallery-grid');
+                const changeButton = document.getElementById('change-photos-button');
+                let allPhotoHtmls = []; // 用来存储从 txt 文件读取的所有图片 HTML
+
+                // 1. 从 8ban.txt 文件加载所有图片链接
+                async function loadAllPhotos() {
+                    try {
+                        const response = await fetch('./8ban.txt'); // 确保 8ban.txt 和 html 文件在同一目录
+                        if (!response.ok) {
+                            throw new Error('无法加载 8ban.txt 文件，请检查文件是否存在。');
+                        }
+                        const textContent = await response.text();
+                        // 按行分割，并过滤掉空行
+                        allPhotoHtmls = textContent.split('\n').filter(line => line.trim() !== '');
+                        
+                        if (allPhotoHtmls.length > 0) {
+                            displayRandomPhotos(); // 首次加载成功后，显示第一批照片
+                        } else {
+                            galleryGrid.innerHTML = '<p class="col-span-full text-center text-red-500 py-8">照片列表为空，请检查 8ban.txt 文件内容。</p>';
+                        }
+
+                    } catch (error) {
+                        console.error('加载照片失败:', error);
+                        galleryGrid.innerHTML = `<p class="col-span-full text-center text-red-500 py-8">加载照片失败: ${error.message}</p>`;
+                    }
+                }
+
+                // 2. 显示10张随机照片的函数
+                function displayRandomPhotos() {
+                    if (!galleryGrid || allPhotoHtmls.length === 0) return;
+
+                    galleryGrid.innerHTML = ''; // 清空现有照片
+
+                    // Fisher-Yates 洗牌算法，高效地打乱数组顺序
+                    const shuffled = [...allPhotoHtmls]; // 创建一个副本进行打乱
+                    for (let i = shuffled.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                    }
+
+                    // 取前10张照片
+                    const photosToShow = shuffled.slice(0, 10);
+
+                    // 将照片添加到网格中
+                    photosToShow.forEach(htmlString => {
+                        const wrapperDiv = document.createElement('div');
+                        // 你原来的样式，保持不变
+                        wrapperDiv.className = 'aspect-square rounded-lg overflow-hidden shadow-md card-hover';
+                        wrapperDiv.innerHTML = htmlString;
+                        galleryGrid.appendChild(wrapperDiv);
+                    });
+                }
+
+                // 3. 页面加载时执行加载
+                loadAllPhotos();
+
+                // 4. 给“换一批！”按钮绑定点击事件
+                if (changeButton) {
+                    changeButton.addEventListener('click', displayRandomPhotos);
+                }
+            });
         });
     </script>
 </body>
