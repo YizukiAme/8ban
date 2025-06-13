@@ -2055,9 +2055,9 @@
             async function loadAllPhotos() {
                 if (!galleryGrid) return;
                 try {
-                    const response = await fetch('https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/8ban.txt');
+                    const response = await fetch('/8ban.txt');
                     if (!response.ok) {
-                        throw new Error(`无法从 GitHub 加载 8ban.txt (状态: ${response.status})`);
+                        throw new Error(`无法从加载 8ban.txt (状态: ${response.status})`);
                     }
                     const textContent = await response.text();
                     allPhotoUrls = textContent.split('\n').filter(line => line.trim() !== '').map(line => {
