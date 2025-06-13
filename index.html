@@ -8,8 +8,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <!-- 引入 Marked.js 用于 Markdown 渲染 -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- 新增：资源预连接，提高加载速度 -->
-    <link rel="preconnect" href="https://i.miji.bid">
+    <!-- 引入 Masonry.js 用于瀑布流布局 -->
+    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+    <!-- 引入 imagesLoaded 确保 Masonry 在图片加载后布局 -->
+    <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
+    
+    <!-- 资源预连接，提高加载速度 -->
+    <link rel="preconnect" href="https://8ban-1311723413.cos.ap-shanghai.myqcloud.com">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://ipinfo.io">
     <link rel="preconnect" href="https://api.jsonbin.io">
@@ -17,33 +22,28 @@
     <link rel="preconnect" href="https://your-vercel-domain.vercel.app"> 
 
     <style>
-        /* Base styles */
         html, body {
-            height: 100%; /* HTML和Body高度100% */
+            height: 100%;
             margin: 0;
             padding: 0;
         }
         body {
             font-family: 'Noto Sans SC', sans-serif;
             color: #2d3748;
-            /* overflow-x: hidden; 这条现在由 #main-content-wrapper 管理 */
             scroll-behavior: smooth; 
-            background-color: #1a202c; /* 深色背景，与固定背景的初始/fallback色保持一致 */
+            background-color: #1a202c;
         }
 
-        /* 主内容滚动区域 - 核心修改 */
         #main-content-wrapper {
-            height: 100%; /* 占满整个视口 */
-            overflow-y: auto; /* 只有Y轴滚动 */
-            overflow-x: hidden; /* 隐藏X轴滚动条 */
-            -webkit-overflow-scrolling: touch; /* 提升 iOS 上的滚动流畅度 */
-            position: relative; /* 为内部的 absolute 定位元素提供参考 */
-            z-index: 1; /* 确保内容在背景之上 */
-            background-color: transparent; /* 内容包装器透明，让背景可见 */
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+            z-index: 1;
+            background-color: transparent;
         }
 
-
-        /* Glassmorphism effect */
         .glassmorphism {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px);
@@ -52,12 +52,12 @@
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
         }
 
-        /* Card hover effects */
         .card-hover {
             transition: all 0.3s ease;
         }
+        /* 悬停效果：微微悬浮放大 */
         .card-hover:hover {
-            transform: translateY(-5px);
+            transform: translateY(-5px) scale(1.02); /* 结合悬浮和放大 */
             box-shadow: 0 12px 28px 0 rgba(31, 38, 135, 0.2);
         }
         .enhanced-card-hover {
@@ -68,7 +68,6 @@
             box-shadow: 0 15px 30px -5px rgba(59, 130, 246, 0.25), 0 8px 10px -6px rgba(59, 130, 246, 0.2);
         }
 
-        /* Highlight text (existing) */
         .highlight-text {
             position: relative;
             display: inline-block;
@@ -84,7 +83,6 @@
             z-index: -1;
         }
 
-        /* Mobile menu (existing) */
         .mobile-menu {
             position: absolute;
             top: 100%;
@@ -108,7 +106,6 @@
             opacity: 1;
         }
 
-        /* Tool area reveal animation (existing) */
         .tools-grid-container {
             max-height: 0;
             overflow: hidden;
@@ -117,12 +114,11 @@
             transform: translateY(20px);
         }
         .tools-grid-container.active {
-            max-height: 2000px; /* Adjust if needed for more tools */
+            max-height: 2000px;
             opacity: 1;
             transform: translateY(0);
         }
 
-        /* Chat bubble styles (existing) */
         .chat-bubble {
             padding: 0.75rem 1rem;
             border-radius: 1rem;
@@ -131,14 +127,14 @@
             word-wrap: break-word;
         }
         .chat-bubble-user {
-            background-color: #3b82f6; /* blue-500 */
+            background-color: #3b82f6;
             color: white;
             margin-left: auto;
             border-bottom-right-radius: 0.25rem;
         }
         .chat-bubble-ai {
-            background-color: #e5e7eb; /* gray-200 */
-            color: #1f2937; /* gray-800 */
+            background-color: #e5e7eb;
+            color: #1f2937;
             margin-right: auto;
             border-bottom-left-radius: 0.25rem;
         }
@@ -175,7 +171,6 @@
             scroll-behavior: smooth;
         }
 
-        /* Danmaku animation (existing) */
         @keyframes moveRight {
             0% { transform: translateX(-100%); opacity: 1;}
             90% { opacity: 1; }
@@ -190,7 +185,6 @@
             background-color: rgba(0,0,0,0.1);
         }
 
-        /* Timeline dot (existing) */
         .timeline-dot {
             width: 12px;
             height: 12px;
@@ -200,7 +194,6 @@
             box-shadow: 0 0 0 3px #60a5fa;
         }
 
-        /* Modal Chatbot Styles (existing) */
         .modal {
             display: none;
             position: fixed;
@@ -274,7 +267,6 @@
             padding-top: 0.5rem;
         }
 
-        /* Danmaku Records Specific Styles (existing) */
         .danmaku-record-item {
             background: rgba(255, 255, 255, 0.8);
             border-radius: 0.75rem;
@@ -295,10 +287,8 @@
             text-align: right;
         }
 
-
-        /* 固定背景层 - 核心修改 */
         #fixed-background {
-            position: fixed; /* 重新改为 fixed */
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -311,43 +301,37 @@
             transition: background-image 0.5s ease-in-out;
             background-color: #1a202c;
             
-            /* 重新引入硬件加速属性，并确保在 fixed 下生效 */
-            -webkit-backface-visibility: hidden; /* For iOS Safari */
+            -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
-            transform: translateZ(0);            /* Force hardware acceleration */
-            will-change: transform;              /* Hint browser about future transformations */
-            /* 新增，尝试优化移动端固定定位 */
+            transform: translateZ(0);
+            will-change: transform;
             -webkit-perspective: 1000;
             perspective: 1000;
             -webkit-transform-style: preserve-3d;
             transform-style: preserve-3d;
         }
 
-        /* New styles for Hero Section and Animations */
         #hero-section {
-            position: relative; /* 确保内容在其z-index层级上 */
-            min-height: 100vh; /* Make it take full viewport height */
+            position: relative;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             color: white;
             text-align: center;
-            overflow: hidden; /* Ensure content doesn't spill */
+            overflow: hidden;
         }
         
-        /* 移除 #hero-bg-image 的样式，因为它已被固定背景层取代 */
-
-
         #hero-content {
-            z-index: 10; /* Bring content to front */
+            z-index: 10;
             padding: 1rem;
             max-width: 900px;
             margin: 0 auto;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.4); /* Text shadow for readability */
-            opacity: 0; /* Initial hidden state for animation */
+            text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            opacity: 0;
             transform: translateY(20px);
-            animation: fadeInSlideUp 1.2s ease-out forwards 0.5s; /* Fade in and slide up after a delay */
+            animation: fadeInSlideUp 1.2s ease-out forwards 0.5s;
         }
 
         @keyframes fadeInSlideUp {
@@ -362,22 +346,20 @@
         }
 
         #hero-section h1 {
-        font-size: 4.5rem; /* 增大标题，从3.5rem改为4.5rem (约72px) */
-        font-weight: 700; /* font-bold */
-        margin-bottom: 1.5rem; /* mb-6 */
-        line-height: 1.2;
-        color: white; /* 设置为纯白色 */
-        text-align: center;
-        text-shadow: 0 4px 12px rgba(0,0,0,0.6), 0 0 20px rgba(0,0,0,0.3); /* 增加更明显的文本阴影，使其在背景上更突出和清晰 */
-        
-        /* 新增：为标题添加透明度 */
-        opacity: 0.8; /* 设置为 90% 不透明，可根据需要调整此值 */
-    }
+            font-size: 4.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+            color: white;
+            text-align: center;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.6), 0 0 20px rgba(0,0,0,0.3);
+            opacity: 0.8;
+        }
 
         #hero-section p {
-            font-size: 1.5rem; /* text-2xl equivalent */
-            color: rgba(255, 255, 255, 0.8); /* Semi-transparent white */
-            margin-bottom: 2rem; /* mb-8 */
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
             text-align: center;
         }
 
@@ -388,12 +370,12 @@
             transform: translateX(-50%);
             color: white;
             font-size: 2rem;
-            animation: bounce 2s infinite; /* Basic bouncing animation */
+            animation: bounce 2s infinite;
             cursor: pointer;
             z-index: 10;
             text-shadow: 0 2px 8px rgba(0,0,0,0.4);
-            opacity: 0; /* Initial hidden state for animation */
-            animation: fadeInBounce 2s infinite forwards 1.5s; /* Fade in then start bouncing */
+            opacity: 0;
+            animation: fadeInBounce 2s infinite forwards 1.5s;
         }
 
         @keyframes bounce {
@@ -410,112 +392,85 @@
         @keyframes fadeInBounce {
             0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
             50% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            100% { opacity: 1; } /* Stay visible for bounce */
+            100% { opacity: 1; }
         }
 
-
-        /* Navigation bar initial state (transparent on hero section) */
         .nav-initial {
-        background: transparent !important;
-        backdrop-filter: none !important;
-        box-shadow: none !important;
-        /* 增加 opacity 过渡，让导航栏淡入淡出 */
-        transition: all 0.5s ease-out, opacity 0.5s ease-out; /* 同时过渡所有属性和 opacity */
-        margin-bottom: 0 !important; /* 强制移除 mb-8 */
-        
-        /* 初始隐藏和禁用点击事件 */
-        opacity: 0; /* 默认完全透明 */
-        pointer-events: none; /* 禁用鼠标事件，让下方的 hero-section 可以被点击或选择 */
-    }
+            background: transparent !important;
+            backdrop-filter: none !important;
+            box-shadow: none !important;
+            transition: all 0.5s ease-out, opacity 0.5s ease-out;
+            margin-bottom: 0 !important;
+            opacity: 0;
+            pointer-events: none;
+        }
 
-    /* 当滚动时，nav-scrolled 状态会恢复可见和可点击 */
-    .nav-scrolled {
-        background: rgba(255, 255, 255, 0.7) !important;
-        backdrop-filter: blur(10px) !important;
-        border-radius: 16px !important;
-        border: 1px solid rgba(255, 255, 255, 0.3) !important;
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15) !important;
-        transition: all 0.5s ease-out, opacity 0.5s ease-out; /* 确保过渡效果一致 */
-        margin-bottom: 0 !important;
-        
-        opacity: 1 !important; /* 强制完全不透明 */
-        pointer-events: auto !important; /* 恢复鼠标事件，可点击 */
-    }
-
-
-        /* Navigation bar scrolled state (glassmorphism effect) */
         .nav-scrolled {
             background: rgba(255, 255, 255, 0.7) !important;
             backdrop-filter: blur(10px) !important;
-            border-radius: 16px !important; /* Already rounded on base */
+            border-radius: 16px !important;
             border: 1px solid rgba(255, 255, 255, 0.3) !important;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15) !important;
-            transition: all 0.5s ease-out;
-            /* nav-scrolled 状态下的颜色通过JS动态设置，以保证准确性 */
+            transition: all 0.5s ease-out, opacity 0.5s ease-out;
+            margin-bottom: 0 !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
         }
 
-
-        /* Content sections initial hidden state for scroll reveal */
         .content-section {
             opacity: 0;
-            transform: translateY(50px); /* Start slightly below its final position */
+            transform: translateY(50px);
             transition: opacity 0.8s ease-out, transform 0.8s ease-out;
         }
-        /* Content sections visible state */
         .content-section.fade-in {
             opacity: 1;
-            transform: translateY(0); /* Move to final position */
+            transform: translateY(0);
         }
 
-        /* Adjust button styles for hero section to match the glassmorphism buttons */
-        #hero-content a.bg-blue-500, /* 更具体的选择器，确保只修改 hero content 下的按钮 */
-        #hero-content a.bg-indigo-500, /* 确保也覆盖同学录按钮 */
+        #hero-content a.bg-blue-500,
+        #hero-content a.bg-indigo-500,
         #hero-content a.bg-purple-500,
         #hero-content a.bg-green-500,
         #hero-content a.bg-orange-500 {
-            /* 直接引用 glassmorphism 效果的背景和边框 */
-            background: rgba(255, 255, 255, 0.2); /* 比 glassmorphism 主体更低的透明度，与截图一致 */
-            backdrop-filter: blur(5px); /* 可以是更弱的模糊效果 */
-            border: 1px solid rgba(255, 255, 255, 0.3); /* 与 glassmorphism 边框一致 */
-            box-shadow: 0 4px 16px 0 rgba(31, 38, 135, 0.1); /* 较弱的阴影 */
-            color: white; /* 确保文字是白色 */
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 16px 0 rgba(31, 38, 135, 0.1);
+            color: white;
             transition: all 0.3s ease;
         }
 
-        /* 悬停效果：保持白色文字，背景颜色可以加深透明度，或保留与背景按钮一致 */
         #hero-content a.bg-blue-500:hover,
         #hero-content a.bg-indigo-500:hover,
         #hero-content a.bg-purple-500:hover,
         #hero-content a.bg-green-500:hover,
         #hero-content a.bg-orange-500:hover {
-            background: rgba(255, 255, 255, 0.3); /* 悬停时稍微加深透明度 */
-            box-shadow: 0 8px 24px 0 rgba(31, 38, 135, 0.2); /* 悬停时阴影加深 */
-            transform: translateY(-3px); /* 维持悬停上移效果 */
-            border-color: rgba(255, 255, 255, 0.5); /* 悬停时边框更亮 */
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 24px 0 rgba(31, 38, 135, 0.2);
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.5);
         }
 
-        /* 同学录专属样式 */
         .classmate-card {
             cursor: pointer;
             position: relative;
-            overflow: hidden; /* Hide anything outside the card */
+            overflow: hidden;
         }
         .classmate-card .avatar {
-            width: 80px; /* Adjust as needed */
+            width: 80px;
             height: 80px;
-            background-color: #6366f1; /* default indigo for avatars */
+            background-color: #6366f1;
             color: white;
             font-size: 2.5rem;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 9999px; /* full rounded */
+            border-radius: 9999px;
             margin-bottom: 0.5rem;
-            flex-shrink: 0; /* Prevent avatar from shrinking */
-            user-select: none; /* Prevent selection */
+            flex-shrink: 0;
+            user-select: none;
         }
-        /* 同学详情模态框的特定样式 */
         .classmate-detail-content {
             background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(20px);
@@ -561,7 +516,7 @@
         }
         .classmate-detail-content .quote {
             font-style: italic;
-            border-left: 4px solid #a78bfa; /* purple-400 */
+            border-left: 4px solid #a78bfa;
             padding-left: 1rem;
             margin-top: 1.5rem;
             color: #6b7280;
@@ -575,37 +530,160 @@
             animation: fadeInScale 0.3s ease-out forwards;
         }
 
-        /* 新增 Loading Overlay Styles */
         #loading-overlay {
-            /* Tailwind classes already handle most, but add explicit transition and pointer-events */
-            transition: opacity 0.5s ease-out; /* 半秒钟的渐隐动画 */
+            transition: opacity 0.5s ease-out;
         }
         #loading-overlay.fade-out {
             opacity: 0;
-            pointer-events: none; /* 元素淡出后，禁用其上的所有鼠标事件，让下层内容可点击 */
+            pointer-events: none;
+        }
+
+        /* Masonry 瀑布流布局相关样式 */
+        #photo-gallery-grid {
+            margin-bottom: 1rem;
+        }
+
+        .grid-sizer, .grid-item {
+            width: calc(20% - 10px); /* 5列，10px 间距 */
+            margin-bottom: 10px; /* 垂直间距 */
+            box-sizing: border-box;
+        }
+
+        /* 响应式调整列数 */
+        @media (max-width: 1023px) { /* lg breakpoint */
+            .grid-sizer, .grid-item {
+                width: calc(33.333% - 10px); /* 3列 */
+            }
+        }
+        @media (max-width: 639px) { /* sm breakpoint */
+            .grid-sizer, .grid-item {
+                width: calc(50% - 10px); /* 2列 */
+            }
+        }
+        @media (max-width: 480px) { /* Extra small screens */
+            .grid-sizer, .grid-item {
+                width: calc(100% - 10px); /* 1列 */
+            }
+        }
+
+        .grid-item {
+            background-color: #e2e8f0; /* 占位符背景色 (gray-200) */
+            border-radius: 0.5rem;
+            overflow: hidden; /* 确保图片圆角和阴影效果正确 */
+            position: relative;
+            /* 初始状态：透明并略微向下，用于 Masonry 布局后的渐入动画 */
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        /* Masonry 布局完成后触发的动画 */
+        .grid-item.masonry-fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .grid-item img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            opacity: 0; /* 图片初始隐藏 */
+            transition: opacity 0.5s ease-in-out; /* 图片渐入动画 */
+            cursor: pointer; /* 指示可点击 */
+        }
+
+        /* 图片加载完成后显示 */
+        .grid-item img.loaded {
+            opacity: 1;
+        }
+
+        /* Lightbox 模态框样式 */
+        .image-modal-overlay {
+            display: none; /* 初始隐藏 */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); /* 半透明黑色背景 */
+            backdrop-filter: blur(10px); /* 模糊效果 */
+            z-index: 1000; /* 确保在最上层 */
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, backdrop-filter 0.3s ease-in-out;
+        }
+
+        .image-modal-overlay.open {
+            display: flex;
+            opacity: 1;
+        }
+
+        .image-modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform: scale(0.8); /* 初始缩小，用于放大动画 */
+            opacity: 0; /* 初始透明，用于渐入动画 */
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease-out;
+        }
+
+        .image-modal-overlay.open .image-modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .image-modal-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* 确保图片完整显示 */
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* 图片阴影 */
+        }
+
+        .image-modal-close {
+            position: absolute;
+            top: -2rem; /* 调整位置，使其在图片上方 */
+            right: -2rem; /* 调整位置 */
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5); /* 增加阴影，使其在深色背景下更清晰 */
+        }
+        .image-modal-close:hover {
+            color: #ccc;
+        }
+        /* 移动端调整关闭按钮位置 */
+        @media (max-width: 768px) {
+            .image-modal-close {
+                top: 0.5rem;
+                right: 0.5rem;
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body class="min-h-screen">
-    <!-- 新增：固定背景层，用于实现视差滚动效果 -->
     <div id="fixed-background"></div>
 
-    <!-- 新增：加载页面覆盖层 -->
     <div id="loading-overlay" class="fixed inset-0 z-[2000] flex items-center justify-center bg-gray-900 transition-opacity duration-500 opacity-100">
         <div class="text-center text-white">
-            <i class="fas fa-ship fa-spin text-6xl mb-4 text-blue-400"></i> <!-- 使用船只图标，配合主题 -->
+            <i class="fas fa-ship fa-spin text-6xl mb-4 text-blue-400"></i>
             <h2 class="text-2xl font-bold mb-2">八贤渡·敬业舟</h2>
             <p class="text-lg">入港中...</p>
         </div>
     </div>
 
-    <!-- Top of Page Anchor - 用于导航条的“首页”链接点击回到页面最顶端 -->
     <div id="top-of-page"></div>
 
-    <!-- main-content-wrapper 包装所有可滚动内容 -->
     <div id="main-content-wrapper" style="height: 100%; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; position: relative; z-index: 1;">
 
-        <!-- 导航条 -->
         <nav class="sticky top-0 z-50 p-4 nav-initial" id="mainNav">
             <div class="container mx-auto flex items-center justify-between">
                 <div class="text-xl font-bold">
@@ -614,7 +692,7 @@
                 <div class="hidden md:flex space-x-6">
                     <a href="#top-of-page" class="hover:text-blue-600 transition-colors">首页</a>
                     <a href="#memory-area" class="hover:text-blue-600 transition-colors">回忆</a>
-                    <a href="#classmates-area" class="hover:text-blue-600 transition-colors">同学录</a> <!-- 新增导航链接 -->
+                    <a href="#classmates-area" class="hover:text-blue-600 transition-colors">同学录</a>
                     <a href="#tool-area" class="hover:text-blue-600 transition-colors">工具</a>
                     <a href="#chatbot-area" class="hover:text-blue-600 transition-colors">Chat with 小八</a>
                     <a href="#message-area" class="hover:text-blue-600 transition-colors">留言</a>
@@ -626,7 +704,7 @@
                 <div class="mobile-menu md:hidden" id="mobileMenu">
                     <a href="#top-of-page" class="block py-2 px-3 text-gray-600 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50 flex items-center"><i class="fas fa-home mr-3 text-blue-500 w-5 text-center"></i>首页</a>
                     <a href="#memory-area" class="block py-2 px-3 text-gray-600 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50 flex items-center"><i class="fas fa-images mr-3 text-blue-500 w-5 text-center"></i>回忆</a>
-                    <a href="#classmates-area" class="block py-2 px-3 text-gray-600 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50 flex items-center"><i class="fas fa-users mr-3 text-blue-500 w-5 text-center"></i>同学录</a> <!-- 新增导航链接 -->
+                    <a href="#classmates-area" class="block py-2 px-3 text-gray-600 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50 flex items-center"><i class="fas fa-users mr-3 text-blue-500 w-5 text-center"></i>同学录</a>
                     <a href="#tool-area" class="block py-2 px-3 text-gray-600 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50 flex items-center"><i class="fas fa-tools mr-3 text-blue-500 w-5 text-center"></i>工具</a>
                     <a href="#chatbot-area" class="block py-2 px-3 text-gray-600 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50 flex items-center"><i class="fas fa-robot mr-3 text-blue-500 w-5 text-center"></i>Chat with 小八</a>
                     <a href="#message-area" class="block py-2 px-3 text-gray-600 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50 flex items-center"><i class="fas fa-comment-dots mr-3 text-blue-500 w-5 text-center"></i>留言</a>
@@ -634,10 +712,7 @@
             </div>
         </nav>
 
-        <!-- 英雄区 (首页 - 第一眼看到的内容) -->
         <div id="hero-section">
-            <!-- 背景图片通过 #fixed-background div 处理，这里不再需要 img 标签 -->
-            
             <div id="hero-content" class="max-w-4xl mx-auto">
                 <h1 class="text-4xl md:text-5xl font-bold mb-6">
                     <span class="highlight-text">八贤渡 · 敬业舟</span>
@@ -661,21 +736,17 @@
                     </a>
                 </div>
             </div>
-            <!-- 向下滚动箭头 -->
             <i id="scrollDownArrow" class="fas fa-chevron-down scroll-down-arrow"></i>
         </div>
 
-        <!-- 首页介绍内容 (原home section，现在作为第一个通过滚动显现的区块) -->
         <section id="intro-content" class="container mx-auto py-16 px-4 md:px-8 content-section">
-        <div class="max-w-4xl mx-auto text-center">
-            <p class="text-xl md:text-2xl text-white mb-8" style="text-shadow: 0 2px 8px rgba(0,0,0,0.5);">
-                <!-- 直接添加 text-white 类，并内联 text-shadow -->
-                纪念敬业中学2025届八班，我们共同的青春岁月。
-            </p>
-        </div>
-    </section>
+            <div class="max-w-4xl mx-auto text-center">
+                <p class="text-xl md:text-2xl text-white mb-8" style="text-shadow: 0 2px 8px rgba(0,0,0,0.5);">
+                    纪念敬业中学2025届八班，我们共同的青春岁月。
+                </p>
+            </div>
+        </section>
 
-        <!-- 回忆 -->
         <section id="memory-area" class="container mx-auto py-12 px-4 md:px-8 content-section">
             <div class="glassmorphism p-6 md:p-8 mb-16">
                 <h2 class="text-3xl font-bold mb-8 flex items-center text-gray-800">
@@ -685,7 +756,6 @@
                     回忆
                 </h2>
 
-                <!-- 毕业计时器将显示在这里 -->
                 <div class="text-center mb-8">
                     <div id="graduationTimer" class="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-4 rounded-lg shadow-md text-xl md:text-2xl font-bold">
                         加载中...
@@ -693,60 +763,26 @@
                     <p class="text-gray-600 text-sm mt-2">逝者如斯，不舍昼夜。</p>
                 </div>
 
-
-                <!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                    <div>
-                        <h3 class="text-xl font-semibold mb-4 text-gray-700">时间轴</h3>
-                        <div class="space-y-6 relative pl-5 border-l-2 border-blue-200">
-                            <div class="flex items-start relative">
-                                <div class="timeline-dot absolute -left-[29px] top-1"></div>
-                                <div class="ml-4 p-4 bg-white/70 rounded-lg shadow-sm w-full">
-                                    <h4 class="font-medium text-blue-600">2022年9月</h4>
-                                    <p class="text-gray-600 text-sm">入学第一天，青涩的我们，怀揣梦想，相聚于此。</p>
-                                </div>
-                            </div>
-                            <div class="flex items-start relative">
-                                <div class="timeline-dot absolute -left-[29px] top-1"></div>
-                                <div class="ml-4 p-4 bg-white/70 rounded-lg shadow-sm w-full">
-                                    <h4 class="font-medium text-blue-600">2024年3月</h4>
-                                    <p class="text-gray-600 text-sm">春季运动会，赛场上的汗水，是我们拼搏的见证。</p>
-                                </div>
-                            </div>
-                            <div class="flex items-start relative">
-                                <div class="timeline-dot absolute -left-[29px] top-1"></div>
-                                <div class="ml-4 p-4 bg-white/70 rounded-lg shadow-sm w-full">
-                                    <h4 class="font-medium text-blue-600">2025年6月</h4>
-                                    <p class="text-gray-600 text-sm">毕业典礼，骊歌响起，我们即将奔赴各自的星辰大海。</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div> -->
-
-                <!-- 找到这个 div -->
                 <div>
                     <h3 class="text-xl font-semibold mb-4 text-gray-700">相册画廊</h3>
-                    
-                    <!-- ⬇️⬇️⬇️ 用下面的代码替换你原来的 grid ⬇️⬇️⬇️ -->
-                    <div id="photo-gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
-                        <!-- 照片将由 JavaScript 动态加载到这里 -->
+                    <!-- 瀑布流容器，Masonry 将在此处工作 -->
+                    <div id="photo-gallery-grid" class="mb-4">
+                        <div class="grid-sizer"></div> <!-- Masonry 用于计算列宽的辅助元素 -->
                         <p class="col-span-full text-center text-gray-500 py-8">正在加载照片...</p>
                     </div>
 
                     <div class="text-center">
                         <button id="change-photos-button" class="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-2 rounded-lg transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                            <i class="fas fa-sync-alt mr-2"></i>换一批！
+                            <i class="fas fa-sync-alt mr-2"></i>再来一批！
                         </button>
                     </div>
-                    <!-- ⬆️⬆️⬆️ 替换到这里结束 ⬆️⬆️⬆️ -->
-
                 </div>
 
                 <div class="mb-8">
-                    <h3 class="text-xl font-semibold mb-4 text-gray-700">毕业视频（占位ing）</h3>
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">纪念视频（待公开...）</h3>
                     <div class="bg-black rounded-lg aspect-video flex items-center justify-center relative overflow-hidden shadow-xl">
-                        <img src="https://source.unsplash.com/random/800x450?graduation,celebration" alt="毕业视频封面" class="absolute inset-0 w-full h-full object-cover opacity-70">
+                        <img src="https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/64a2af07bd07c.jpeg" alt="嗯？这里什么都没有哦" class="absolute inset-0 w-full h-full object-cover opacity-70">
                         <i class="fas fa-play-circle text-6xl text-white opacity-80 z-10 cursor-pointer hover:opacity-100 transition-opacity"></i>
-                        <!-- 实际视频嵌入占位: <video controls class="w-full h-full"><source src="your-video.mp4" type="video/mp4"></video> -->
                     </div>
                 </div>
 
@@ -754,15 +790,15 @@
                     <h3 class="text-xl font-semibold mb-4 text-gray-700">师说</h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="bg-gradient-to-br from-blue-50 to-indigo-100 p-5 rounded-xl shadow-lg card-hover">
-                            <p class="text-gray-700 text-sm leading-relaxed">"不要天天作业帮。"</p>
+                            <p class="text-gray-700 text-sm leading-relaxed">"祝愿8班的孩子们，能读到精彩的书，遇见有趣的人，走过最美的风景，成为最爱的自己。"</p>
                             <p class="text-right text-xs text-indigo-500 mt-2">- 董老师</p>
                         </div>
                         <div class="bg-gradient-to-br from-green-50 to-teal-100 p-5 rounded-xl shadow-lg card-hover">
-                            <p class="text-gray-700 text-sm leading-relaxed">"高中生活虽然结束了，但是您的未来还有很多美好的事情等待着您，加油喵！"</p>
+                            <p class="text-gray-700 text-sm leading-relaxed">"Whereof one cannot speak, thereof one must be silent（还没问所以只能silent...等回复ing"</p>
                             <p class="text-right text-xs text-teal-500 mt-2">- 朱老师</p>
                         </div>
                         <div class="bg-gradient-to-br from-purple-50 to-pink-100 p-5 rounded-xl shadow-lg card-hover">
-                            <p class="text-gray-700 text-sm leading-relaxed">"班里男生安静一点😡😡😭"</p>
+                            <p class="text-gray-700 text-sm leading-relaxed">"Whereof one cannot speak, thereof one must be silent（还没问所以只能silent...等回复ing😭"</p>
                             <p class="text-right text-xs text-pink-500 mt-2">- 诸老师</p>
                         </div>
                     </div>
@@ -770,7 +806,6 @@
             </div>
         </section>
 
-        <!-- 同学录 -->
         <section id="classmates-area" class="container mx-auto py-12 px-4 md:px-8 content-section">
             <div class="glassmorphism p-6 md:p-8 mb-16">
                 <h2 class="text-3xl font-bold mb-8 flex items-center text-gray-800">
@@ -780,12 +815,10 @@
                     同学录
                 </h2>
                 <div id="classmateCardsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-                    <!-- 同学卡片将由 JavaScript 动态生成 -->
                 </div>
             </div>
         </section>
 
-        <!-- 工具 -->
         <section id="tool-area" class="container mx-auto py-12 px-4 md:px-8 content-section">
             <div class="glassmorphism p-6 md:p-8 mb-16">
                 <h2 class="text-3xl font-bold mb-8 flex items-center text-gray-800">
@@ -795,7 +828,6 @@
                     工具
                 </h2>
 
-                <!-- 学术助手主卡片 -->
                 <div id="academicHelperCard" class="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 rounded-xl shadow-xl cursor-pointer enhanced-card-hover mb-6 text-white flex items-center justify-between">
                     <div>
                         <h3 class="text-2xl font-semibold mb-2 flex items-center">
@@ -806,14 +838,11 @@
                     <i id="toolsToggleIcon" class="fas fa-chevron-down text-2xl transition-transform duration-300"></i>
                 </div>
 
-                <!-- 工具卡片网格 (Bento Grid style, initially hidden) -->
                 <div id="toolsGridContainer" class="tools-grid-container">
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="toolsGrid">
-                        <!-- Tool cards will be injected here by JavaScript -->
                     </div>
                 </div>
 
-                <!-- 休闲助手主卡片 -->
                 <div id="recreationHelperCard" class="bg-gradient-to-br from-red-500 to-orange-600 p-6 rounded-xl shadow-xl cursor-pointer enhanced-card-hover mb-6 text-white flex items-center justify-between mt-8">
                     <div>
                         <h3 class="text-2xl font-semibold mb-2 flex items-center">
@@ -824,16 +853,13 @@
                     <i id="recreationToolsToggleIcon" class="fas fa-chevron-down text-2xl transition-transform duration-300"></i>
                 </div>
 
-                <!-- 休闲工具卡片网格 (Bento Grid style, initially hidden) -->
                 <div id="recreationToolsGridContainer" class="tools-grid-container">
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="recreationToolsGrid">
-                        <!-- Recreation Tool cards will be injected here by JavaScript -->
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Chat with 小八区 -->
         <section id="chatbot-area" class="container mx-auto py-12 px-4 md:px-8 content-section">
             <div class="glassmorphism p-6 md:p-8 mb-16">
                 <h2 class="text-3xl font-bold mb-8 flex items-center text-gray-800">
@@ -848,7 +874,6 @@
 
                 <div class="bg-white/80 backdrop-blur-sm rounded-xl p-4 sm:p-6 max-w-3xl mx-auto shadow-lg border border-gray-200">
                     <div id="chatMessages" class="h-80 overflow-y-auto mb-4 p-3 space-y-3 bg-gray-50/50 rounded-lg border">
-                        <!-- Messages will be appended here by JS -->
                     </div>
 
                     <div class="flex items-center gap-3">
@@ -862,14 +887,12 @@
             </div>
         </section>
 
-        <!-- 弹出的模态对话框 (全屏模拟) -->
         <div id="chatModal" class="modal">
             <div class="modal-content">
                 <span class="modal-close" id="closeChatModalButton">×</span>
                 <h3 class="text-2xl font-bold text-gray-800 mb-4">
                     <i class="fas fa-robot mr-2"></i>小八
                     <select id="modelSelect" class="ml-4 text-base px-3 py-1 rounded-lg bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <!-- 新的模型选项 -->
                         <option value="domestic_normal">普通小八 (国内版)</option>
                         <option value="domestic_inference">推理小八 (国内版)</option>
                         <option value="international_normal">普通小八 (国际版)</option>
@@ -878,7 +901,6 @@
                     <span id="currentModelDisplay" class="ml-2 text-sm text-gray-600">当前模型: 普通小八 (国内版)</span>
                 </h3>
                 <div id="modalChatMessages" class="modal-chat-messages space-y-3">
-                    <!-- Messages will be cloned/appended here -->
                 </div>
                 <div class="modal-chat-input-area">
                     <input type="text" id="modalChatInput" placeholder="输入你的问题..." class="flex-1 border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm text-sm">
@@ -893,18 +915,22 @@
             </div>
         </div>
 
-        <!-- 同学详情模态框 -->
         <div id="classmateDetailModal" class="modal">
             <div class="classmate-detail-content">
                 <span class="modal-close" id="closeClassmateDetailModalButton">×</span>
                 <div id="classmateDetailContentBody">
-                    <!-- 同学详细信息将在此处动态加载 -->
                 </div>
             </div>
         </div>
 
+        <!-- Lightbox 模态框 -->
+        <div id="imageModalOverlay" class="image-modal-overlay">
+            <div class="image-modal-content">
+                <span class="image-modal-close" id="closeImageModalButton">×</span>
+                <img id="modalImage" src="" alt="Full size image" class="image-modal-image">
+            </div>
+        </div>
 
-        <!-- 留言 (仅保留弹幕区) -->
         <section id="message-area" class="container mx-auto py-12 px-4 md:px-8 content-section">
             <div class="glassmorphism p-6 md:p-8 mb-16">
                 <h2 class="text-3xl font-bold mb-8 flex items-center text-gray-800">
@@ -914,11 +940,9 @@
                     留言
                 </h2>
 
-                <!-- 实时弹幕区 -->
                 <div class="mb-8">
                     <h3 class="text-xl font-semibold mb-4 text-gray-700">实时弹幕</h3>
                     <div id="danmakuContainer" class="bg-gray-800/80 backdrop-blur-sm rounded-lg h-72 p-4 overflow-hidden relative shadow-inner border border-gray-700">
-                        <!-- Dynamic danmaku items will be loaded here -->
                     </div>
 
                     <div class="mt-4 flex items-center gap-3">
@@ -929,11 +953,9 @@
                     </div>
                 </div>
 
-                <!-- 弹幕历史记录区 -->
                 <div>
                     <h3 class="text-xl font-semibold mb-4 text-gray-700">弹幕历史记录</h3>
                     <div id="danmakuRecords" class="space-y-3 max-h-96 overflow-y-auto p-2 bg-gray-50/50 rounded-lg border border-gray-200">
-                        <!-- Historical danmaku items will be loaded here -->
                         <p class="text-gray-500 text-sm text-center">加载中...</p>
                     </div>
                     <p id="danmakuRecordsError" class="text-red-500 text-xs mt-2 h-4"></p>
@@ -941,7 +963,6 @@
             </div>
         </section>
 
-        <!-- 页脚 -->
         <footer class="bg-gray-100/70 py-8 mt-10 border-t border-gray-200/80">
             <div class="container mx-auto px-4 md:px-8">
                 <div class="flex flex-col md:flex-row justify-between items-center text-center md:text-left">
@@ -951,36 +972,26 @@
                     </div>
                     <div class="flex items-center">
                         <p class="text-gray-600 text-sm mr-4">Designed by <a href="https://github.com/YizukiAme" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:text-blue-700 hover:underline">Yizuki_Ame</a></p>
-                        <!-- <div class="bg-white p-2 rounded-lg shadow">
-                            <div class="w-20 h-20 bg-gray-200 flex items-center justify-center text-gray-400 text-xs">班徽/二维码</div>
-                        </div> -->
                     </div>
                 </div>
             </div>
         </footer>
-    </div> <!-- End of main-content-wrapper -->
-
-    <!-- SCRIPT START -->
+    </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            
-            // =============================================================================
-            // 模块一：全局元素获取与核心页面逻辑
-            // =============================================================================
             const mainNav = document.getElementById('mainNav');
             const heroSection = document.getElementById('hero-section');
-            const fixedBackground = document.getElementById('fixed-background'); // 获取固定背景元素
-            const mainContentWrapper = document.getElementById('main-content-wrapper'); // 新增：主内容包装器
+            const fixedBackground = document.getElementById('fixed-background');
+            const mainContentWrapper = document.getElementById('main-content-wrapper');
             const contentSections = document.querySelectorAll('.content-section');
             const scrollDownArrow = document.getElementById('scrollDownArrow');
             const mobileMenuButton = document.getElementById('mobileMenuButton');
             const mobileMenu = document.getElementById('mobileMenu');
             const graduationTimer = document.getElementById('graduationTimer'); 
 
-            // 毕业计时器 (优化为增量式更新)
             if (graduationTimer) {
-                const GRADUATION_DATE = new Date('2025-06-07T00:00:00'); // 毕业时间
-                let initialTimeDiffMs = GRADUATION_DATE.getTime() - new Date().getTime(); // 初始的毫秒差
+                const GRADUATION_DATE = new Date('2025-06-07T00:00:00');
+                let initialTimeDiffMs = GRADUATION_DATE.getTime() - new Date().getTime();
 
                 function updateGraduationTimerOptimized() {
                     initialTimeDiffMs -= 1000; 
@@ -1015,36 +1026,33 @@
                 console.error("Graduation timer element not found!");
             }
 
-
-            // 背景图片随机选择和固定
             const desktopImages = [
-                "https://i.miji.bid/2025/06/04/7fdeeeb52e2ba2aca0c76e23a1d54bbe.jpeg",
-                "https://i.miji.bid/2025/06/04/c572e1bd26b13fffb68e0cfd9b198fc6.png",
-                "https://i.miji.bid/2025/06/04/e22635b4242570eb151695b295c2bf87.jpeg",
-                "https://i.miji.bid/2025/06/04/9505bd25461c4282b67ed682d922d908.jpeg"
+                "https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/7fdeeeb52e2ba2aca0c76e23a1d54bbe.jpg",
+                "https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/c572e1bd26b13fffb68e0cfd9b198fc6.png",
+                "https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/e22635b4242570eb151695b295c2bf87.jpg",
+                "https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/9505bd25461c4282b67ed682d922d908.jpg"
             ];
             const mobileImages = [
-                "https://i.miji.bid/2025/06/04/9da590620de6f96c3ac255d00d1fbde5.jpeg",
-                "https://i.miji.bid/2025/06/04/03ba246a4afedfc4af676b63de03270e.jpeg",
-                "https://i.miji.bid/2025/06/04/b17575039ee4f88ef94cc0003cbc7b42.jpeg",
-                "https://i.miji.bid/2025/06/04/ac820b57dabf0f473c742ca5c0738beb.jpeg"
+                "https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/9da590620de6f96c3ac255d00d1fbde5.jpg",
+                "https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/03ba246a4afedfc4af676b63de03270e.jpg",
+                "https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/b17575039ee4f88ef94cc0003cbc7b42.jpg",
+                "https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/ac820b57dabf0f473c742ca5c0738beb.jpg"
             ];
 
             function setHeroBackgroundImage() {
                 const isMobile = window.innerWidth <= 768;
                 const images = isMobile ? mobileImages : desktopImages;
                 const randomIndex = Math.floor(Math.random() * images.length);
-                const selectedImage = images[randomIndex];
-
-                if (fixedBackground) {
-                    fixedBackground.style.backgroundImage = `url('${selectedImage}')`;
+                const selectedImageUrl = images[randomIndex];
+                
+                if (fixedBackground && selectedImageUrl) {
+                    fixedBackground.style.backgroundImage = `url('${selectedImageUrl}')`;
                 } else {
-                    console.error("Fixed background element not found!");
+                    console.error("Fixed background element not found or image URL is empty!");
                 }
             }
             setHeroBackgroundImage();
 
-            // 导航条与内容区显示逻辑
             if (mainNav) {
                 mainNav.classList.add('nav-initial');
                 function setNavColors(isInitial) {
@@ -1076,11 +1084,10 @@
                     section.classList.remove('fade-in');
                 });
 
-                // 滚动监听器：控制导航条显隐 - 现在监听 mainContentWrapper 的滚动
                 if (mainContentWrapper) {
                     mainContentWrapper.addEventListener('scroll', function() {
                         const scrollThreshold = heroSection ? heroSection.clientHeight * 0.5 : 200;
-                        if (this.scrollTop > scrollThreshold) { // 注意这里是 this.scrollTop
+                        if (this.scrollTop > scrollThreshold) {
                             mainNav.classList.remove('nav-initial');
                             mainNav.classList.add('nav-scrolled');
                             setNavColors(false);
@@ -1094,19 +1101,16 @@
                     console.error("Main content wrapper not found!");
                 }
 
-                // Intersection Observer：优雅地展示内容区（滚动时淡入和滚出） - 现在观察器绑定到 mainContentWrapper
                 const contentObserverOptions = {
-                    root: mainContentWrapper, // 将根元素设置为 mainContentWrapper
+                    root: mainContentWrapper,
                     rootMargin: '0px',
                     threshold: 0.1
                 };
 
-                const contentObserver = new IntersectionObserver((entries, observer) => {
+                const contentObserver = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
                             entry.target.classList.add('fade-in');
-                        } else {
-                            // entry.target.classList.remove('fade-in'); 
                         }
                     });
                 }, contentObserverOptions);
@@ -1118,7 +1122,6 @@
                 console.error("Main navigation element not found!");
             }
 
-            // 移动端导航菜单切换
             if (mobileMenuButton && mobileMenu) {
                 mobileMenuButton.addEventListener('click', function() {
                     mobileMenu.classList.toggle('active');
@@ -1135,7 +1138,6 @@
                 console.error("Mobile menu elements not found!");
             }
 
-            // 平滑滚动
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
                     e.preventDefault();
@@ -1143,7 +1145,7 @@
                     
                     if (targetId === '#top-of-page' || targetId === '#') {
                         if (mainContentWrapper) {
-                            mainContentWrapper.scrollTo({ // 滚动 mainContentWrapper
+                            mainContentWrapper.scrollTo({
                                 top: 0,
                                 behavior: 'smooth'
                             });
@@ -1153,13 +1155,12 @@
                     } else {
                         const targetElement = document.querySelector(targetId);
                         if (targetElement && mainContentWrapper) {
-                            // 计算目标元素在 mainContentWrapper 内部的相对位置
                             const offsetTop = targetElement.offsetTop;
-                            mainContentWrapper.scrollTo({ // 滚动 mainContentWrapper
+                            mainContentWrapper.scrollTo({
                                 top: offsetTop,
                                 behavior: 'smooth',
                             });
-                        } else if (targetElement) { // fallback
+                        } else if (targetElement) {
                                 targetElement.scrollIntoView({
                                 behavior: 'smooth',
                                 block: 'start'
@@ -1176,7 +1177,6 @@
                 });
             });
 
-            // 英雄区向下滚动箭头
             if (scrollDownArrow) {
                 scrollDownArrow.addEventListener('click', function() {
                     const firstContentSection = document.getElementById('intro-content');
@@ -1195,10 +1195,6 @@
                 });
             }
 
-
-            // =============================================================================
-            // 模块二：工具功能
-            // =============================================================================
             const academicHelperCard = document.getElementById('academicHelperCard');
             const toolsGridContainer = document.getElementById('toolsGridContainer');
             const toolsToggleIcon = document.getElementById('toolsToggleIcon');
@@ -1209,7 +1205,6 @@
             const recreationToolsToggleIcon = document.getElementById('recreationToolsToggleIcon');
             const recreationToolsGrid = document.getElementById('recreationToolsGrid');
 
-            // 学术工具数据
             const academicToolsData = [
                 { name: 'DeepSeek', description: '免费 AI 写作辅助工具', link: 'https://www.deepseek.com/', icon: 'fas fa-search-plus' },
                 { name: 'SurveyGO', description: '清华 NLP 组 AI 问卷生成器', link: 'https://surveygo.modelbest.cn/', icon: 'fas fa-poll-h' },
@@ -1223,7 +1218,6 @@
                 { name: 'Hugging Face', description: 'AI模型与数据集开放平台', link: 'https://huggingface.co/', icon: 'fas fa-brain' }
             ];
 
-            // 休闲工具数据
             const recreationToolsData = [
                 { name: 'Steam', description: 'PC游戏平台，探索无限游戏乐趣', link: 'https://store.steampowered.com/', icon: 'fab fa-steam' },
                 { name: '网易云音乐', description: '听歌，看评论，发现同好', link: 'https://music.163.com/', icon: 'fas fa-music' },
@@ -1235,7 +1229,6 @@
                 { name: '知乎', description: '有问题，上知乎', link: 'https://www.zhihu.com/', icon: 'fab fa-zhihu' }
             ];
 
-            // 创建并填充工具卡片的通用函数
             function populateToolsGrid(gridElement, toolsArray) {
                 if (!gridElement) return;
                 gridElement.innerHTML = '';
@@ -1267,7 +1260,7 @@
                     toolsToggleIcon.classList.toggle('fa-chevron-up');
                 });
             } else {
-                console.error("学术工具区元素未找到。");
+                console.error("Academic tool section elements not found.");
             }
 
             if (recreationHelperCard && recreationToolsGridContainer && recreationToolsToggleIcon && recreationToolsGrid) {
@@ -1278,13 +1271,9 @@
                     recreationToolsToggleIcon.classList.toggle('fa-chevron-up');
                 });
             } else {
-                console.error("休闲工具区元素未找到。");
+                console.error("Recreation tool section elements not found.");
             }
 
-
-            // =============================================================================
-            // 模块三：Chat with 小八 功能 (Vercel Functions 代理集成)
-            // =============================================================================
             const chatMessages = document.getElementById('chatMessages');
             const chatInput = document.getElementById('chatInput');
             const chatSendButton = document.getElementById('chatSendButton');
@@ -1458,7 +1447,6 @@
                 chatMessages.scrollTop = chatMessages.scrollHeight;
                 modalChatMessages.scrollTop = modalChatMessages.scrollHeight;
 
-
                 try {
                     const aiText = await sendChatMessage(conversationHistory, currentModelConfig);
 
@@ -1546,7 +1534,7 @@
 
                 window.addEventListener('click', (event) => {
                     if (event.target == chatModal) {
-                        chatModal.classList.remove('open');
+                        closeChatModalButton.click();
                     }
                 });
 
@@ -1580,100 +1568,159 @@
                 console.error("Modal chat elements not found.");
             }
 
-            // =============================================================================
-            // 模块四：同学录功能
-            // =============================================================================
             const classmateCardsGrid = document.getElementById('classmateCardsGrid');
             const classmateDetailModal = document.getElementById('classmateDetailModal');
             const closeClassmateDetailModalButton = document.getElementById('closeClassmateDetailModalButton');
             const classmateDetailContentBody = document.getElementById('classmateDetailContentBody');
 
-            // 同学数据 - **请替换为你们班级的真实数据！**
-            // 注意：手机号和邮箱等敏感信息请谨慎录入，仅在班级内部严格限制访问或使用占位符。
+            // 更新后的同学数据
             const classmatesData = [
                 {
-                    name: "张三",
-                    avatarInitials: "ZS",
-                    studentId: "202508001",
-                    phone: "138-xxxx-xxxx", // 谨慎录入，可改为 "(暂未录入)" 或 "(联系班长获取)"
-                    email: "zhangsan@example.com", // 谨慎录入
-                    message: "祝大家前程似锦，顶峰相见！"
+                    name: "陈一宁",
+                    avatarInitials: "CY", // Chen Yi
+                    studentId: "802",
+                    birthday: "0524",
+                    phone: "18817410363",
+                    email: "(暂未录入)",
+                    message: "无论怎样都要加油哦"
                 },
                 {
-                    name: "李四",
-                    avatarInitials: "LS",
-                    studentId: "202508002",
+                    name: "蔡家靖",
+                    avatarInitials: "CJ", // Cai Jia
+                    studentId: "809",
+                    birthday: "0811",
+                    phone: "17317300422",
+                    email: "2769571359@qq.com",
+                    message: "祝各位前程似锦"
+                },
+                {
+                    name: "徐诚豪",
+                    avatarInitials: "XC", // Xu Cheng
+                    studentId: "34",
+                    birthday: "1025",
+                    phone: "18516171025",
+                    email: "18516171025@163.com",
+                    message: "前程似锦，未来可期"
+                },
+                {
+                    name: "傅睿绅",
+                    avatarInitials: "FR", // Fu Rui
+                    studentId: "811",
+                    birthday: "0704",
+                    phone: "13122556694",
+                    email: "1574822747@qq.com",
+                    message: "(暂未录入)"
+                },
+                {
+                    name: "陈冰羽",
+                    avatarInitials: "CB", // Chen Bing
+                    studentId: "801",
+                    birthday: "1218",
+                    phone: "15317380612",
+                    email: "chenbingyu_1218@163.com",
+                    message: "祝大家前程似锦，所愿皆所得，要记得开心！"
+                },
+                {
+                    name: "吴笛",
+                    avatarInitials: "WD", // Wu Di
+                    studentId: "832",
+                    birthday: "0305",
+                    phone: "13816958833",
+                    email: "(暂未录入)",
+                    message: "不断羁绊，无限未来！"
+                },
+                {
+                    name: "金祺峰",
+                    avatarInitials: "JQ", // Jin Qi
+                    studentId: "15",
+                    birthday: "1211",
+                    phone: "15821133028",
+                    email: "m15821133028@163.com",
+                    message: "成为你自己！"
+                },
+                {
+                    name: "马有宁",
+                    avatarInitials: "MY", // Ma You
+                    studentId: "22",
+                    birthday: "1002",
+                    phone: "13671962954",
+                    email: "chuanliubei114514@qq.com",
+                    message: "事不必难，知难不难，前路已多，艰难坎坷，但犹豫退缩者难至终点。迎难而上，直面挑战，才能活出人生独一无二的精彩"
+                },
+                {
+                    name: "任悠优",
+                    avatarInitials: "RY", // Ren You
+                    studentId: "804",
+                    birthday: "0124",
+                    phone: "18321412048",
+                    email: "Yoyoren7@sina.com",
+                    message: "你镇定了但仍在燃烧，你平稳了却更加浩荡。"
+                },
+                {
+                    name: "孙羽菲",
+                    avatarInitials: "SY", // Sun Yu
+                    studentId: "611",
+                    birthday: "1013",
+                    phone: "18019704495",
+                    email: "3124604014@qq.com",
+                    message: "向哪儿走都是向前走！"
+                },
+                {
+                    name: "林宸晞",
+                    avatarInitials: "LC", // Lin Chen
+                    studentId: "19",
+                    birthday: "1114",
+                    phone: "15316770919",
+                    email: "230967560@qq.com",
+                    message: "一切顺利 天天开心"
+                },
+                {
+                    name: "周乐怡",
+                    avatarInitials: "ZL", // Zhou Le
+                    studentId: "807",
+                    birthday: "0112",
+                    phone: "13901601790",
+                    email: "yukizhoucn@163.com",
+                    message: "喜欢大家，我们无论在哪里都闪闪发光💖"
+                },
+                {
+                    name: "吴子皓",
+                    avatarInitials: "WZ", // Wu Zi
+                    studentId: "833",
+                    birthday: "0815",
                     phone: "(暂未录入)",
                     email: "(暂未录入)",
-                    message: "时光不老，我们不散！"
+                    message: "(暂未录入)"
                 },
                 {
-                    name: "王五",
-                    avatarInitials: "WW",
-                    studentId: "202508003",
-                    phone: "139-xxxx-xxxx",
-                    email: "wangwu@example.com",
-                    message: "保持热爱，奔赴山海！"
+                    name: "华霖",
+                    avatarInitials: "HL", // Hua Lin
+                    studentId: "14",
+                    birthday: "1009",
+                    phone: "13671655963",
+                    email: "(暂未录入)",
+                    message: "(暂未录入)"
                 },
                 {
-                    name: "赵六",
-                    avatarInitials: "ZL",
-                    studentId: "202508004",
+                    name: "苏彦清",
+                    avatarInitials: "SY", // Su Yan
+                    studentId: "828",
+                    birthday: "0124",
                     phone: "(暂未录入)",
                     email: "(暂未录入)",
-                    message: "毕业快乐！希望大家都能找到自己喜欢的人生道路！"
+                    message: "愿你的未来如诗画，愿你的人生如星辰"
                 },
                 {
-                    name: "钱七",
-                    avatarInitials: "QQ",
-                    studentId: "202508005",
-                    phone: "(暂未录入)",
-                    email: "(暂未录入)",
-                    message: "高中三年，回忆满满，期待大学的精彩生活！"
-                },
-                {
-                    name: "孙八",
-                    avatarInitials: "SB",
-                    studentId: "202508006",
-                    phone: "(暂未录入)",
-                    email: "(暂未录入)",
-                    message: "友谊长存，常联系！"
-                },
-                {
-                    name: "周九",
-                    avatarInitials: "ZJ",
-                    studentId: "202508007",
-                    phone: "(暂未录入)",
-                    email: "(暂未录入)",
-                    message: "毕业快乐，前程似锦！"
-                },
-                {
-                    name: "吴十",
-                    avatarInitials: "WS",
-                    studentId: "202508008",
-                    phone: "(暂未录入)",
-                    email: "(暂未录入)",
-                    message: "人生有梦，一起做梦！"
-                },
-                {
-                    name: "李十一",
-                    avatarInitials: "LSY",
-                    studentId: "202508009",
-                    phone: "(暂未录入)",
-                    email: "(暂未录入)",
-                    message: "永远是八班的崽！"
-                },
-                {
-                    name: "陈十二",
-                    avatarInitials: "CSE",
-                    studentId: "202508010",
-                    phone: "(暂未录入)",
-                    email: "(暂未录入)",
-                    message: "未来可期，加油干饭人！"
-                },
+                    name: "你",
+                    avatarInitials: "YOU", // 
+                    studentId: "你没填问卷！",
+                    birthday: "我不知道！",
+                    phone: "这个也不知道！",
+                    email: "这个还是不知道！",
+                    message: "对于不可言说的，我们只能保持沉默 —— 奥地利哲学家 路德维希 · 维特根斯坦"
+                }
             ];
 
-            // 创建并填充同学卡片
             function populateClassmateCards() {
                 if (!classmateCardsGrid) return;
                 classmateCardsGrid.innerHTML = '';
@@ -1681,9 +1728,12 @@
                     const cardDiv = document.createElement('div');
                     cardDiv.classList.add('bg-white/70', 'backdrop-blur-sm', 'p-4', 'rounded-xl', 'shadow-lg', 'classmate-card', 'enhanced-card-hover', 'text-center', 'flex', 'flex-col', 'items-center', 'justify-content-center');
                     
+                    // 确保 avatarInitials 至少有一个字符，如果姓名为空或无法提取，则使用默认值
+                    const initials = classmate.avatarInitials || (classmate.name ? classmate.name.substring(0, 1).toUpperCase() : '?');
+
                     const avatarHtml = `
                         <div class="avatar bg-indigo-500">
-                            ${classmate.avatarInitials}
+                            ${initials}
                         </div>
                     `;
                     const nameHtml = `<h4 class="text-xl font-semibold text-gray-800">${classmate.name}</h4>`;
@@ -1695,7 +1745,29 @@
                 });
             }
 
-            // 显示同学详情模态框
+            function showClassmateDetailModal(classmate) {
+                if (!classmateDetailModal || !classmateDetailContentBody) return;
+
+                // 确保 avatarInitials 至少有一个字符，如果姓名为空或无法提取，则使用默认值
+                const initials = classmate.avatarInitials || (classmate.name ? classmate.name.substring(0, 1).toUpperCase() : '?');
+
+                classmateDetailContentBody.innerHTML = `
+                    <div class="avatar-large bg-blue-600">
+                        ${initials}
+                    </div>
+                    <h3>${classmate.name}</h3>
+                    <p><strong>学号：</strong>${classmate.studentId}</p>
+                    <p><strong>生日：</strong>${classmate.birthday}</p> <!-- 新增的生日显示 -->
+                    <p><strong>手机号：</strong>${classmate.phone}</p>
+                    <p><strong>邮箱：</strong>${classmate.email}</p>
+                    <p class="quote">"${classmate.message}"</p>
+                `;
+                classmateDetailModal.classList.add('open');
+            }
+
+            // ... (其他代码保持不变)
+
+
             function showClassmateDetailModal(classmate) {
                 if (!classmateDetailModal || !classmateDetailContentBody) return;
 
@@ -1712,14 +1784,12 @@
                 classmateDetailModal.classList.add('open');
             }
 
-            // 关闭同学详情模态框
             function closeClassmateDetailModal() {
                 if (classmateDetailModal) {
                     classmateDetailModal.classList.remove('open');
                 }
             }
 
-            // 监听器
             if (classmateCardsGrid && classmateDetailModal && closeClassmateDetailModalButton) {
                 populateClassmateCards();
 
@@ -1730,58 +1800,45 @@
                     }
                 });
             } else {
-                console.error("同学录相关元素未找到。");
+                console.error("Classmate section elements not found.");
             }
             
-            // =============================================================================
-            // 模块五：弹幕区功能
-            // =============================================================================
             const danmakuContainer = document.getElementById('danmakuContainer');
             const danmakuInput = document.getElementById('danmakuInput');
             const danmakuSendButton = document.getElementById('danmakuSendButton');
-            const danmakuRecordsContainer = document.getElementById('danmakuRecords'); // 新增的弹幕记录容器
+            const danmakuRecordsContainer = document.getElementById('danmakuRecords');
             const danmakuRecordsError = document.getElementById('danmakuRecordsError');
 
-            // **请替换为你在 JSONBin.io 注册后获得的真实信息**
             const JSONBIN_API_KEY = "$2a$10$xLxeYmOT4sgeNhR9TB7rFe.SrN73KzvX1akvgdam30AI07ksJ1xAm";
             const JSONBIN_BIN_ID  = "683f30358a456b7966a91837";
             const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
 
             const danmakuColors = ['text-red-400', 'text-blue-300', 'text-green-300', 'text-purple-300', 'text-yellow-300', 'text-pink-300', 'text-teal-300', 'text-white'];
 
-            // 全局弹幕池，用于实时滚动
             let danmakuPool = [];
-            let danmakuInterval = null; // 用于存储定时器的ID，方便清除
+            let danmakuInterval = null;
 
-            // 获取用户 IP 和地理位置信息
             async function getIpInfo() {
                 try {
-                    // ipinfo.io 是境外服务，在中国大陆可能无法访问。
-                    // 如果无法访问，可以考虑使用国内的 IP 查询 API，但大多需要备案或有调用限制。
-                    // 或者接受 IP 信息为“未知地点”。
                     const response = await fetch('https://ipinfo.io/json');
                     const data = await response.json();
                     return `${data.city || data.region || '未知城市'}, ${data.country || '未知国家'}`;
                 } catch (error) {
                     console.error("Error fetching IP info:", error);
-                    return "未知地点"; // 如果获取失败，返回未知地点
+                    return "未知地点";
                 }
             }
 
-            // 启动实时弹幕的循环滚动
             function startDanmakuLoop() {
-                // 如果已经有定时器在运行，先清除
                 if (danmakuInterval) {
                     clearInterval(danmakuInterval);
                 }
 
                 danmakuInterval = setInterval(() => {
                     if (danmakuPool.length === 0) {
-                        // console.log("Danmaku pool is empty, waiting for new danmakus...");
-                        return; // 弹幕池为空，不滚动
+                        return;
                     }
 
-                    // 随机选择一个弹幕进行滚动
                     const randomIndex = Math.floor(Math.random() * danmakuPool.length);
                     const danmaku = danmakuPool[randomIndex];
 
@@ -1790,27 +1847,23 @@
                     danmakuItem.classList.add(danmakuColors[Math.floor(Math.random() * danmakuColors.length)]);
                     danmakuItem.textContent = danmaku.text;
                     
-                    // 随机生成垂直位置，避免重叠
                     const containerHeight = danmakuContainer.clientHeight;
-                    const itemHeight = 30; // Rough height for a danmaku item
+                    const itemHeight = 30;
                     const randomTop = Math.random() * (containerHeight - itemHeight);
                     danmakuItem.style.top = `${randomTop}px`;
 
-                    const duration = Math.random() * 7 + 8; // Random duration for speed variation
-                    danmakuItem.style.animation = `moveRight ${duration}s linear forwards`; // Use 'forwards' to stay at end after animation
+                    const duration = Math.random() * 7 + 8;
+                    danmakuItem.style.animation = `moveRight ${duration}s linear forwards`;
 
                     danmakuContainer.appendChild(danmakuItem);
 
-                    // 动画结束后移除元素，防止 DOM 元素过多
                     danmakuItem.addEventListener('animationend', () => {
                         danmakuItem.remove();
                     });
 
-                }, 1000); // 每隔1秒发射一条弹幕 (可以调整频率)
+                }, 1000);
             }
 
-
-            // 从 JSONBin 获取弹幕历史记录并显示，同时填充 danmakuPool
             async function fetchDanmakuRecords() {
                 danmakuRecordsContainer.innerHTML = '<p class="text-gray-500 text-sm text-center">加载历史弹幕...</p>';
                 danmakuRecordsError.textContent = '';
@@ -1818,7 +1871,7 @@
                     const response = await fetch(JSONBIN_URL + '/latest', {
                         headers: {
                             'X-Master-Key': JSONBIN_API_KEY,
-                            'X-Bin-Meta': 'false' // 不返回元数据
+                            'X-Bin-Meta': 'false'
                         }
                     });
                     if (!response.ok) {
@@ -1826,11 +1879,10 @@
                     }
                     let records = await response.json();
                     
-                    danmakuRecordsContainer.innerHTML = ''; // Clear loading message
-                    danmakuPool = []; // 清空弹幕池
+                    danmakuRecordsContainer.innerHTML = '';
+                    danmakuPool = [];
 
                     if (records && records.length > 0) {
-                        // 按时间倒序排列，新的在前面显示在记录列表中
                         records.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); 
 
                         records.forEach(record => {
@@ -1841,9 +1893,8 @@
                                 </div>
                             `;
                             danmakuRecordsContainer.innerHTML += recordHtml;
-                            danmakuPool.push(record); // 将所有历史弹幕加入滚动池
+                            danmakuPool.push(record);
                         });
-                        // 确保弹幕池有内容后，开始滚动循环
                         startDanmakuLoop();
                     } else {
                         danmakuRecordsContainer.innerHTML = '<p class="text-gray-500 text-sm text-center">暂无历史弹幕。</p>';
@@ -1855,21 +1906,18 @@
                 }
             }
 
-            // 发送弹幕并保存到 JSONBin
             async function sendDanmaku() {
                 const text = danmakuInput.value.trim();
                 if (!text) return;
 
-                danmakuInput.value = ''; // 清空输入框
-                danmakuRecordsError.textContent = ''; // 清除之前的错误信息
+                danmakuInput.value = '';
+                danmakuRecordsError.textContent = '';
 
-                // 获取 IP 信息
                 const location = await getIpInfo();
-                const timestamp = new Date().toISOString(); // ISO格式时间戳
+                const timestamp = new Date().toISOString();
 
                 const newDanmaku = { text, location, timestamp };
 
-                // 从 JSONBin 读取现有数据
                 try {
                     const response = await fetch(JSONBIN_URL + '/latest', {
                         headers: {
@@ -1880,16 +1928,14 @@
                     let currentRecords = [];
                     if (response.ok) {
                         currentRecords = await response.json();
-                    } else if (response.status === 404) { // Bin might be empty/new
+                    } else if (response.status === 404) {
                         currentRecords = [];
                     } else {
                         throw new Error(`Failed to read current records: ${response.statusText}`);
                     }
 
-                    // 追加新弹幕到内存中的数组
                     currentRecords.push(newDanmaku);
 
-                    // 更新 JSONBin (PUT操作会覆盖整个bin)
                     const updateResponse = await fetch(JSONBIN_URL, {
                         method: 'PUT',
                         headers: {
@@ -1903,10 +1949,8 @@
                         throw new Error(`Failed to update danmaku records: ${updateResponse.statusText}`);
                     }
                     
-                    // 将新弹幕添加到弹幕池中，使其可以立即滚动
                     danmakuPool.push(newDanmaku);
                     
-                    // 刷新历史记录显示
                     fetchDanmakuRecords();
 
                 } catch (error) {
@@ -1916,7 +1960,7 @@
             }
 
             if (danmakuSendButton && danmakuInput && danmakuContainer && danmakuRecordsContainer) {
-                fetchDanmakuRecords(); // Initial load of danmaku records
+                fetchDanmakuRecords();
                 danmakuSendButton.addEventListener('click', sendDanmaku);
                 danmakuInput.addEventListener('keypress', function(e) {
                     if (e.key === 'Enter') {
@@ -1927,28 +1971,100 @@
                 console.error("Danmaku UI elements not found.");
             }
             
-            // =============================================================================
-            // 模块六：相册画廊动态加载功能 (最终修正版)
-            // =============================================================================
             const galleryGrid = document.getElementById('photo-gallery-grid');
             const changeButton = document.getElementById('change-photos-button');
-            let allPhotoHtmls = []; // 用来存储从 txt 文件读取的所有图片 HTML
+            let allPhotoUrls = [];
+            let shuffledPhotoUrls = [];
+            let currentPhotoIndex = 0;
+            let msnry;
 
-            // 1. 从 8ban.txt 文件加载所有图片链接
+            // Lightbox elements
+            const imageModalOverlay = document.getElementById('imageModalOverlay');
+            const closeImageModalButton = document.getElementById('closeImageModalButton');
+            const modalImage = document.getElementById('modalImage');
+
+            // Function to get dynamic batch size
+            function getBatchSize() {
+                return window.innerWidth <= 768 ? 8 : 10; // Mobile: 8, Desktop: 10
+            }
+
+            // Function to open lightbox
+            function openImageModal(imageUrl) {
+                if (imageModalOverlay && modalImage) {
+                    modalImage.src = imageUrl;
+                    imageModalOverlay.classList.add('open');
+                    document.body.style.overflow = 'hidden'; // Prevent body scroll
+                }
+            }
+
+            // Function to close lightbox
+            function closeImageModal() {
+                if (imageModalOverlay) {
+                    imageModalOverlay.classList.remove('open');
+                    // Re-enable body scroll after transition ends
+                    imageModalOverlay.addEventListener('transitionend', function handler() {
+                        document.body.style.overflow = '';
+                        imageModalOverlay.removeEventListener('transitionend', handler);
+                    }, { once: true });
+                }
+            }
+
+            // Lightbox event listeners
+            if (closeImageModalButton) {
+                closeImageModalButton.addEventListener('click', closeImageModal);
+            }
+            if (imageModalOverlay) {
+                imageModalOverlay.addEventListener('click', (event) => {
+                    // Only close if clicking on the overlay itself, not the image
+                    if (event.target === imageModalOverlay) {
+                        closeImageModal();
+                    }
+                });
+            }
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && imageModalOverlay && imageModalOverlay.classList.contains('open')) {
+                    closeImageModal();
+                }
+            });
+
+
+            // 初始化 Masonry
+            if (galleryGrid) {
+                // 移除初始加载信息
+                galleryGrid.querySelector('p')?.remove(); 
+                // 添加 grid-sizer 用于 Masonry 计算列宽
+                const gridSizer = document.createElement('div');
+                gridSizer.className = 'grid-sizer';
+                galleryGrid.appendChild(gridSizer);
+
+                msnry = new Masonry(galleryGrid, {
+                    itemSelector: '.grid-item',
+                    columnWidth: '.grid-sizer',
+                    gutter: 10,
+                    percentPosition: true,
+                    transitionDuration: '0.4s' // Masonry 自身布局动画时间
+                });
+            }
+
+            // 从 8ban.txt 文件加载所有图片链接
             async function loadAllPhotos() {
                 if (!galleryGrid) return;
                 try {
-                    // ✅ 这里是关键的修正，确保从 GitHub 的 Raw URL 获取文件
                     const response = await fetch('https://raw.githubusercontent.com/YizukiAme/8ban/main/8ban.txt'); 
                     if (!response.ok) {
                         throw new Error(`无法从 GitHub 加载 8ban.txt (状态: ${response.status})`);
                     }
                     const textContent = await response.text();
-                    // 按行分割，并过滤掉空行
-                    allPhotoHtmls = textContent.split('\n').filter(line => line.trim() !== '');
-                    
-                    if (allPhotoHtmls.length > 0) {
-                        displayRandomPhotos(); // 首次加载成功后，显示第一批照片
+                    allPhotoUrls = textContent.split('\n').filter(line => line.trim() !== '').map(line => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(line, 'text/html');
+                        const imgElement = doc.querySelector('img');
+                        return imgElement ? imgElement.src : null;
+                    }).filter(url => url !== null);
+
+                    if (allPhotoUrls.length > 0) {
+                        shuffleAndResetPhotos();
+                        displayNextBatchPhotos();
                     } else {
                         galleryGrid.innerHTML = '<p class="col-span-full text-center text-red-500 py-8">照片列表为空，请检查 8ban.txt 文件内容。</p>';
                     }
@@ -1959,61 +2075,120 @@
                 }
             }
 
-            // 2. 显示10张随机照片的函数
-            function displayRandomPhotos() {
-                if (!galleryGrid || allPhotoHtmls.length === 0) return;
-
-                galleryGrid.innerHTML = ''; // 清空现有照片
-
-                // Fisher-Yates 洗牌算法，高效地打乱数组顺序
-                const shuffled = [...allPhotoHtmls]; // 创建一个副本进行打乱
-                for (let i = shuffled.length - 1; i > 0; i--) {
+            // 打乱图片顺序并重置索引
+            function shuffleAndResetPhotos() {
+                shuffledPhotoUrls = [...allPhotoUrls];
+                for (let i = shuffledPhotoUrls.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
-                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                    [shuffledPhotoUrls[i], shuffledPhotoUrls[j]] = [shuffledPhotoUrls[j], shuffledPhotoUrls[i]];
                 }
-
-                // 取前10张照片
-                const photosToShow = shuffled.slice(0, 10);
-
-                // 将照片添加到网格中
-                photosToShow.forEach(htmlString => {
-                    const wrapperDiv = document.createElement('div');
-                    // 你原来的样式，保持不变
-                    wrapperDiv.className = 'aspect-square rounded-lg overflow-hidden shadow-md card-hover';
-                    wrapperDiv.innerHTML = htmlString; // 直接插入完整的 <img> 标签 HTML
-                    galleryGrid.appendChild(wrapperDiv);
-                });
+                currentPhotoIndex = 0;
             }
 
-            // 3. 页面加载时执行加载
-            // 确保 galleryGrid 元素存在后再调用 loadAllPhotos
+            // 显示下一批照片
+            function displayNextBatchPhotos() {
+                if (!msnry || shuffledPhotoUrls.length === 0) return;
+
+                const batchSize = getBatchSize(); // 获取动态批次大小
+                const photosToAppend = shuffledPhotoUrls.slice(currentPhotoIndex, currentPhotoIndex + batchSize);
+
+                if (photosToAppend.length === 0) {
+                    if (changeButton) {
+                        changeButton.textContent = '已显示所有照片，点击重新开始！';
+                        changeButton.classList.add('bg-gray-500', 'hover:bg-gray-600');
+                        changeButton.classList.remove('bg-indigo-500', 'hover:bg-indigo-600');
+                    }
+                    return;
+                }
+
+                const newItems = [];
+                photosToAppend.forEach(imageUrl => {
+                    const wrapperDiv = document.createElement('div');
+                    wrapperDiv.className = 'grid-item rounded-lg shadow-md card-hover';
+                    
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = '班级照片';
+                    img.className = 'w-full h-auto object-cover rounded-lg';
+
+                    wrapperDiv.appendChild(img);
+                    galleryGrid.appendChild(wrapperDiv);
+
+                    newItems.push(wrapperDiv);
+
+                    // 图片加载完成或失败时，触发图片渐入动画
+                    img.onload = () => {
+                        img.classList.add('loaded');
+                    };
+                    img.onerror = () => {
+                        img.alt = '图片加载失败';
+                        img.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%24%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M21%2015V19C21%2019.5304%2020.7893%2020.0391%2020.4142%2020.4142C20.0391%2020.7893%2019.5304%2021%2019%2021H5C4.46957%2021%203.96086%2020.7893%203.58579%2020.4142C3.21071%2020.0391%203%2019.5304%203%2019V5C3%204.46957%203.21071%203.96086%203.58579%203.58579C3.96086%203.21071%204.46957%203%205%203H11%22%20stroke%3D%22%239CA3AF%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M14%2010L21%203%22%20stroke%3D%22%239CA3AF%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M15%203H21V9%22%20stroke%3D%22%239CA3AF%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Ccircle%20cx%3D%228.5%22%20cy%3D%228.5%22%20r%3D%222.5%22%20stroke%3D%22%239CA3AF%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E';
+                        img.classList.add('loaded');
+                    };
+
+                    // 添加点击事件监听器，打开 Lightbox
+                    img.addEventListener('click', () => openImageModal(imageUrl));
+                });
+
+                currentPhotoIndex += photosToAppend.length;
+
+                // 使用 imagesLoaded 确保所有图片加载完成后再更新 Masonry 布局
+                imagesLoaded(newItems, function() {
+                    msnry.appended(newItems);
+                    // Masonry 布局完成后，触发 grid-item 的渐入动画，并添加错时延迟
+                    newItems.forEach((item, index) => {
+                        setTimeout(() => {
+                            item.classList.add('masonry-fade-in');
+                        }, index * 80); // 每个项目延迟 80ms
+                    });
+                });
+
+                // 更新按钮文本和样式
+                if (changeButton) {
+                    if (currentPhotoIndex < shuffledPhotoUrls.length) {
+                        changeButton.textContent = '再来一批！';
+                        changeButton.classList.remove('bg-gray-500', 'hover:bg-gray-600');
+                        changeButton.classList.add('bg-indigo-500', 'hover:bg-indigo-600');
+                    } else {
+                        changeButton.textContent = '已显示所有照片，点击重新开始！';
+                        changeButton.classList.add('bg-gray-500', 'hover:bg-gray-600');
+                        changeButton.classList.remove('bg-indigo-500', 'hover:bg-indigo-600');
+                    }
+                }
+            }
+
+            // 页面加载时执行加载
             if (galleryGrid) {
                 loadAllPhotos();
             }
             
-            // 4. 给“换一批！”按钮绑定点击事件
+            // 给“再来一批！”按钮绑定点击事件
             if (changeButton) {
-                changeButton.addEventListener('click', displayRandomPhotos);
+                changeButton.addEventListener('click', () => {
+                    if (currentPhotoIndex >= shuffledPhotoUrls.length) {
+                        // 如果所有照片都已显示，则清空画廊，重新打乱并加载第一批
+                        msnry.remove(msnry.getItemElements());
+                        msnry.layout();
+                        shuffleAndResetPhotos();
+                        displayNextBatchPhotos();
+                    } else {
+                        displayNextBatchPhotos();
+                    }
+                });
             } else {
                 console.error("Change photos button not found!");
             }
 
-            // =============================================================================
-            // 最后的加载页处理 (New)
-            // 确保在所有初始化逻辑（包括API调用和DOM填充）完成后再隐藏加载页
-            // =============================================================================
             const loadingOverlay = document.getElementById('loading-overlay');
             if (loadingOverlay) {
-                // 使用 setTimeout 确保浏览器有时间渲染 DOM 更新，防止过早移除
                 setTimeout(() => {
                     loadingOverlay.classList.add('fade-out');
                     loadingOverlay.addEventListener('transitionend', () => {
-                        loadingOverlay.remove(); // 动画结束后从 DOM 中移除元素
-                    }, { once: true }); // 确保事件监听器只执行一次
-                }, 500); // 延迟 500ms 启动动画，确保页面基本内容加载
+                        loadingOverlay.remove();
+                    }, { once: true });
+                }, 500);
             }
-        }); // 唯一的、最外层的 DOMContentLoaded 结束
+        });
     </script>
-    <!-- SCRIPT END -->
 </body>
 </html>
