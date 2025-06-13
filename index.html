@@ -1206,16 +1206,23 @@
             const recreationToolsGrid = document.getElementById('recreationToolsGrid');
 
             const academicToolsData = [
-                { name: 'DeepSeek', description: '免费 AI 写作辅助工具', link: 'https://www.deepseek.com/', icon: 'fas fa-search-plus' },
-                { name: 'SurveyGO', description: '清华 NLP 组 AI 问卷生成器', link: 'https://surveygo.modelbest.cn/', icon: 'fas fa-poll-h' },
-                { name: 'Mendeley', description: '学术参考文献管理工具', link: 'https://www.mendeley.com/', icon: 'fas fa-book-reader' },
-                { name: 'Notion', description: '云笔记+知识管理平台', link: 'https://www.notion.so/', icon: 'fas fa-sticky-note' },
-                { name: 'uTools', description: '生产力桌面插件平台', link: 'https://www.u.tools/', icon: 'fas fa-puzzle-piece' },
-                { name: 'Sci-Hub 备用', description: '免费获取科研文献 (参考)', link: 'https://sci-hub.se/', icon: 'fas fa-key' },
-                { name: 'arXiv', description: '开源论文预印本平台', link: 'https://arxiv.org/', icon: 'fas fa-atom' },
-                { name: 'Zotero', description: '文献管理器 (学术适用)', link: 'https://www.zotero.org/', icon: 'fas fa-bookmark' },
-                { name: 'OpenRouter', description: '免费多模型调用平台', link: 'https://openrouter.ai/', icon: 'fas fa-cogs' },
-                { name: 'Hugging Face', description: 'AI模型与数据集开放平台', link: 'https://huggingface.co/', icon: 'fas fa-brain' }
+                { name: '思得下载', description: '学术文献下载平台，提供国内外期刊论文、学位论文等资源下载。', link: 'https://www.scidown.cn/', icon: 'fas fa-download' },
+                { name: '开放存取图书馆 (OALib)', description: '一个大型开放存取学术文献数据库，涵盖多学科领域。', link: 'https://www.oalib.com/', icon: 'fas fa-book-open' },
+                { name: 'Sci-Hub', description: '免费获取科研文献的常用途径', link: 'https://sci-hub.ru/', icon: 'fas fa-key' },
+                { name: 'WhiteSmoke', description: '专业的英语写作和语法检查工具。', link: 'https://www.whitesmoke.com/', icon: 'fas fa-pen-alt' },
+                { name: '术语在线', description: '国家级专业术语知识服务平台，提供多语种术语查询。', link: 'https://www.termonline.cn/index', icon: 'fas fa-language' },
+                { name: 'BioRender', description: '生物绘图工具，帮助生物学科研人员快速创建专业科学插图。', link: 'https://app.biorender.com/', icon: 'fas fa-flask' },
+                { name: 'Plagiarism Checker X', description: '专业的查重工具，用于检测论文、文章的抄袭情况。', link: 'https://plagiarismcheckerx.com/', icon: 'fas fa-copy' },
+                { name: 'Grammarly', description: '一个知名的英语语法、拼写和写作风格检查工具。', link: 'https://www.grammarlys.cn/', icon: 'fas fa-spell-check' },
+                { name: 'AI Cleaner', description: 'AI生成内容检测与优化工具。', link: 'https://www.aigcleaner.com/', icon: 'fas fa-robot' },
+                { name: '上海图书馆', description: '上海市综合性公共图书馆，提供丰富的数字资源和文献服务。超级小众但超级好用！', link: 'https://library.sh.cn/', icon: 'fas fa-university' },
+                { name: 'DeepSeek', description: '无需多言。', link: 'https://www.deepseek.com/', icon: 'fas fa-search-plus' },
+                { name: 'Engineering Village', description: '工程领域综合性文献数据库，包含Ei Compendex等。', link: 'https://www.engineeringvillage.com/', icon: 'fas fa-industry' },
+                { name: 'OpenRouter', description: '免费多模型调用平台，集成多种大型语言模型API。', link: 'https://openrouter.ai/', icon: 'fas fa-cogs' },
+                { name: 'Zotero', description: '免费开源的文献管理工具，支持文献收集、整理和引用。', link: 'https://www.zotero.org/', icon: 'fas fa-bookmark' },
+                { name: 'Mendeley', description: '参考文献管理工具，集文献管理、PDF阅读和学术社交于一体。', link: 'https://www.mendeley.com/', icon: 'fas fa-book-reader' },
+                { name: 'SurveyGO', description: '清超级清华团队研发的超级文献综述生成工具。', link: 'https://surveygo.modelbest.cn/', icon: 'fas fa-poll-h' },
+                { name: 'Socolar', description: '一家中国学术搜索引擎，提供中文学术文献的搜索和下载服务。', link: 'https://www.socolar.com/', icon: 'fas fa-search' }
             ];
 
             const recreationToolsData = [
@@ -1226,7 +1233,8 @@
                 { name: 'Dribbble', description: '设计师作品分享与灵感获取', link: 'https://dribbble.com/', icon: 'fas fa-drafting-compass' },
                 { name: '斗鱼直播', description: '游戏直播，互动娱乐', link: 'https://www.douyu.com/', icon: 'fas fa-gamepad' },
                 { name: '豆瓣电影', description: '电影、图书、音乐评分与评论', link: 'https://movie.douban.com/', icon: 'fas fa-film' },
-                { name: '知乎', description: '有问题，上知乎', link: 'https://www.zhihu.com/', icon: 'fab fa-zhihu' }
+                { name: '知乎', description: '有问题，上知乎', link: 'https://www.zhihu.com/', icon: 'fab fa-zhihu' },
+                { name: '以上暂且占位', description: '后续会改成真正有用的东西~~', link: 'https://www.zhihu.com/', icon: 'fab fa-zhihu' }
             ];
 
             function populateToolsGrid(gridElement, toolsArray) {
