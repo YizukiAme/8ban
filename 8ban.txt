@@ -765,3 +765,4 @@
 <img src="https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/%E7%AC%AC2%E9%A2%98_Danny%20Su_20231113_4e097d44dcdc4174b5a1ab51ea3c9251_3.jpeg"/>
 <img src="https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/%E7%AC%AC2%E9%A2%98_D.R3_20231112_037167142549ab4f053e83738084e52a_1.jpeg"/>
 <img src="https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/%E7%AC%AC2%E9%A2%98_D.R3_20231112_434fc68c334e77197de1828a92333329_2.jpeg"/>
+<img src="https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20250613185006.jpg"/>
