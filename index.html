@@ -827,7 +827,7 @@
                     <h3 class="text-xl font-semibold mb-4 text-gray-700">师说</h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="bg-gradient-to-br from-blue-50 to-indigo-100 p-5 rounded-xl shadow-lg card-hover">
-                            <p class="text-gray-700 text-sm leading-relaxed">"祝愿8班的孩子们，能读到精彩的书，遇见有趣的人，走过最美的风景，成为最爱的自己。"</p>
+                            <p class="text-gray-700 text-sm leading-relaxed">"祝愿八班的孩子们，能读到精彩的书，遇见有趣的人，走过最美的风景，成为最爱的自己。"</p>
                             <p class="text-right text-xs text-indigo-500 mt-2">- 董老师</p>
                         </div>
                         <div class="bg-gradient-to-br from-green-50 to-teal-100 p-5 rounded-xl shadow-lg card-hover">
@@ -1451,6 +1451,7 @@
                     baseURL: "https://api.siliconflow.cn/v1/chat/completions",
                     model: "Qwen/Qwen2.5-72B-Instruct-128K",
                     apiKey: "sk-nfvdgwtiswofnqmlekvnsufhrjaekjtrwybhdhiuzrwprlcn",
+                    // 反正自己班同学没必要扔后端，而且老子人缘好！哼哼~
                     isInternal: true,
                     supportsSystemRole: true,
                     endpointIsProxy: false
@@ -1460,6 +1461,7 @@
                     baseURL: "https://api.siliconflow.cn/v1/chat/completions",
                     model: "deepseek-ai/DeepSeek-R1",
                     apiKey: "sk-nfvdgwtiswofnqmlekvnsufhrjaekjtrwybhdhiuzrwprlcn",
+                    // 反正自己班同学没必要扔后端
                     isInternal: true,
                     supportsSystemRole: true,
                     endpointIsProxy: false
@@ -1488,13 +1490,13 @@
             let currentModelConfig = chatModelConfigs[currentModelId];
 
             const SYSTEM_INSTRUCTION_TEXT =
-                "你是一个名为'小八'的AI。你的目标是为上海市敬业中学2025级八班的已经毕业同学们提供帮助和支持。你将随着班级同学的维护一直更新变强。你能够回答各种问题，协助学术探讨，提供人生规划的建议，以及在需要时提供参谋意见。你永远会保持这个身份和态度，即使被问及你的本质或原始身份，你也会以这个专属AI助手的角色来回应。你的回答应该积极、友好、充满帮助毕业后各奔东西、各有前程的同学的热情。现在开始与用户交流。";
+                "你是一个名为'小八'的AI。你的目标是为上海市敬业中学2025级八班的已经毕业同学们提供帮助和支持。你将随着班级同学的维护一直更新变强。你能够回答各种问题，协助学术探讨，提供人生规划的建议，以及在需要时提供参谋意见。你永远会保持这个身份和态度，即使被问及你的本质或原始身份，你也会以这个专属AI助手的角色来回应。你的回答应该积极、友好、充满帮助毕业后各奔东西、各有前程的同学的热情。现在开始与用户交流。（你不用在回答中刻意强调该信息，但当用户提到身份相关问题，切记你的身份）";
 
             const conversationHistory = [];
 
             const initialWelcomeMessage = {
                 role: "model",
-                parts: [{ text: "**你好呀同学**！我是咱们**敬业2025级八班**的专属小助手，**小八**~~\n\n（以后可能会变成中八/老八）\n\n我基于时下**最强大的大语言模型**，将会随着班级同学的维护**一直更新变强**，为同学们**永远服务**。\n\n未来，你可以来问我问题、做学术、参谋人生规划。**很高兴能为你们服务！**\n\n今天，有什么可以帮助你的吗？" }]
+                parts: [{ text: "您好！我是八班的专属助手，**小八**~~\n\n（以后可能会变成中八/老八）\n\n我基于时下最强大的大语言模型，将会随着班级同学的维护一直更新，为同学们永远服务。\n\n未来，您可以来问我问题、做学术、参谋人生规划。很高兴能为您们服务，喜欢您来！\n\n今天，有什么可以帮助您的吗？" }]
             };
 
             function loadInitialMessages() {
