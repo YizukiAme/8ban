@@ -5,13 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>八贤渡 · 敬业舟</title>
     <link href="./output.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <!-- 引入 Marked.js 用于 Markdown 渲染 -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- 引入 Masonry.js 用于瀑布流布局 -->
-    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
-    <!-- 引入 imagesLoaded 确保 Masonry 在图片加载后布局 -->
-    <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
+    <link rel="stylesheet" href="./css/font-awesome.min.css">
+    <script src="./js/marked.min.js"></script>
+    <script src="./js/masonry.pkgd.min.js"></script>
+    <script src="./js/imagesloaded.pkgd.min.js"></script>
     
     <!-- 资源预连接，提高加载速度 -->
     <link rel="preconnect" href="https://8ban-1311723413.cos.ap-shanghai.myqcloud.com">
@@ -2058,7 +2055,7 @@
             async function loadAllPhotos() {
                 if (!galleryGrid) return;
                 try {
-                    const response = await fetch('https://raw.githubusercontent.com/YizukiAme/8ban/main/8ban.txt'); 
+                    const response = await fetch('https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/8ban.txt');
                     if (!response.ok) {
                         throw new Error(`无法从 GitHub 加载 8ban.txt (状态: ${response.status})`);
                     }
