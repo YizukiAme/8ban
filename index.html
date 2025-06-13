@@ -664,6 +664,29 @@
                 font-size: 2rem;
             }
         }
+
+        /* 默认样式：适用于桌面端及所有屏幕，保持一行显示 */
+        .highlight-text .part-one,
+        .highlight-text .separator,
+        .highlight-text .part-two {
+            display: inline; /* 默认行内显示 */
+        }
+
+        /* 媒体查询：当屏幕宽度小于或等于某个阈值时（例如768px，通常作为移动端断点） */
+        @media (max-width: 768px) {
+            .highlight-text .separator {
+                display: none; /* 隐藏分隔符 */
+            }
+
+            .highlight-text .part-two {
+                display: block; /* 将第二部分设置为块级元素，使其换行 */
+                /* 可以根据需要调整外边距，例如：margin-top: 0.2em; */
+            }
+            /* 如果需要更精细的控制，例如调整行高或字体大小，也可以在这里添加 */
+            .highlight-text {
+                line-height: 1.2; /* 调整整体行高，使两行更紧凑 */
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -712,8 +735,13 @@
         <div id="hero-section">
             <div id="hero-content" class="max-w-4xl mx-auto">
                 <h1 class="text-4xl md:text-5xl font-bold mb-6">
-                    <span class="highlight-text">八贤渡 · 敬业舟</span>
+                    <span class="highlight-text">
+                        <span class="part-one">八贤渡</span>
+                        <span class="separator"> · </span>
+                        <span class="part-two">敬业舟</span>
+                    </span>
                 </h1>
+
                 <p class="text-xl md:text-2xl mb-8">从此岸到彼岸，八班风采依旧</p>
                 <div class="flex flex-wrap justify-center gap-4">
                     <a href="#memory-area" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors text-lg font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
@@ -855,7 +883,7 @@
                 <div id="recreationHelperCard" class="bg-gradient-to-br from-red-500 to-orange-600 p-6 rounded-xl shadow-xl cursor-pointer enhanced-card-hover mb-6 text-white flex items-center justify-between mt-8">
                     <div>
                         <h3 class="text-2xl font-semibold mb-2 flex items-center">
-                            <i class="fas fa-gamepad mr-3"></i>休闲助手
+                            <i class="fas fa-gamepad mr-3"></i>休闲娱乐
                         </h3>
                         <p class="text-indigo-100">为你的课业闲暇添点趣味——点击展开休闲工具集。</p>
                     </div>
