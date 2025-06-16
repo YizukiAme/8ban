@@ -1,96 +1,136 @@
 // api/gemini-proxy.js
-// 这是一个 Vercel Serverless Function，用于代理对 tiu.me (Gemini) API 的请求
-// 部署在 Vercel 后，你的前端可以请求 /api/gemini-proxy，而无需面对 CORS 问题
 
-// Vercel Functions 默认支持 node-fetch，无需额外安装
-// import fetch from 'node-fetch'; // 在 Vercel 环境中通常不需要显式引入，因为它是内置的
+import { Readable } from 'node:stream';
 
-// *** 请在 Vercel 项目设置中配置环境变量：GEMINI_API_KEY_TIU ***
-// 访问方式：process.env.YOUR_VARIABLE_NAME
-const TIU_GEMINI_API_KEY = process.env.GEMINI_API_KEY_TIU; 
+const TIU_GEMINI_API_KEY = process.env.GEMINI_API_KEY_TIU;
 
-// AI 角色设定，与前端代码中的 SYSTEM_INSTRUCTION_TEXT 保持一致
 const SYSTEM_INSTRUCTION_TEXT = 
     "你是一个名为'小八'的AI。你的目标是为上海市敬业中学2025级八班的已经毕业同学们提供帮助和支持。你将随着班级同学的维护一直更新变强。你能够回答各种问题，协助学术探讨，提供人生规划的建议，以及在需要时提供参谋意见。你永远会保持这个身份和态度，即使被问及你的本质或原始身份，你也会以这个专属AI助手的角色来回应。你的回答应该积极、友好，并充满帮助毕业后各奔东西，各有前程的同学的热情。现在开始与用户交流。";
 
 export default async function (req, res) {
-    // 检查请求方法，只允许 POST
+    // ==========================================================
+    // VVVVVV  日志功能新增  VVVVVV
+    console.log(`\n[${new Date().toISOString()}] New request to /api/gemini-proxy`);
+    // ==========================================================
+
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    
     if (req.method !== 'POST') {
-        // 对于 OPTIONS 预检请求，直接返回 200 OK 并带上 CORS 头
-        if (req.method === 'OPTIONS') {
-            res.setHeader('Access-Control-Allow-Origin', '*'); // 允许所有源（或者更精确地设置为 'https://8ban.uno'）
-            res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // 允许前端发送的头
-            res.setHeader('Access-Control-Max-Age', '86400'); // 预检请求结果缓存1天
-            return res.status(200).end();
-        }
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    // 检查 API Key 是否已设置
     if (!TIU_GEMINI_API_KEY) {
-        return res.status(500).json({ error: "Server API Key not configured. Please set GEMINI_API_KEY_TIU in Vercel Environment Variables." });
+        console.error("[ERROR] Server API Key (GEMINI_API_KEY_TIU) not configured.");
+        return res.status(500).json({ error: { message: "Server API Key not configured. Please set GEMINI_API_KEY_TIU in Vercel Environment Variables." } });
     }
-
-    // 从前端请求体中获取对话历史和模型ID
-    const { conversationHistory, modelId } = req.body;
+    
+    const { conversationHistory, modelId, stream = false } = req.body;
+    
+    // ==========================================================
+    console.log(`[INFO] Requesting model: ${modelId}, stream: ${stream}`);
+    // ==========================================================
 
     if (!conversationHistory || !modelId) {
-        return res.status(400).json({ error: "Missing conversationHistory or modelId in request body." });
+        return res.status(400).json({ error: { message: "Missing conversationHistory or modelId in request body." } });
     }
 
-    // tiu.me 的 API URL
     const targetUrl = `https://api.tiu.me/v1/chat/completions`;
     const headers = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${TIU_GEMINI_API_KEY}`
     };
 
-    // 构建发送给 tiu.me 的请求体
-    const requestMessages = [];
-    requestMessages.push({ role: "system", content: SYSTEM_INSTRUCTION_TEXT });
-    const messages = conversationHistory.map(msg => ({
-        role: msg.role === "model" ? "assistant" : msg.role, // "model" -> "assistant" for OpenAI
-        content: msg.parts[0].text // 确保从 msg.parts[0].text 获取内容
-    }));
-    requestMessages.push(...messages);
+    const requestMessages = [
+        { role: "system", content: SYSTEM_INSTRUCTION_TEXT },
+        ...conversationHistory.map(msg => ({
+            role: msg.role === "model" ? "assistant" : msg.role,
+            content: msg.parts[0].text
+        }))
+    ];
 
     const requestBody = {
-        model: modelId, // 使用前端传递的模型ID
+        model: modelId,
         messages: requestMessages,
-        stream: false // 如果需要流式传输，这里需要修改
+        stream: stream
     };
 
     try {
+        // ==========================================================
+        console.log(`[INFO] Sending request to tiu.me...`);
+        // ==========================================================
         const apiRes = await fetch(targetUrl, {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(requestBody)
         });
-
-        const data = await apiRes.json();
-
-        // 将 tiu.me API 的响应状态码和内容直接转发给前端
-        res.setHeader('Access-Control-Allow-Origin', '*'); // **允许所有源，解决前端 CORS 问题**
-        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS'); // 必须允许 POST 和 OPTIONS
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); // 允许前端发出的头
         
-        // 通常情况下，Vercel Functions 会自动处理一些基本 CORS 头，
-        // 但显式设置 Access-Control-Allow-Origin 可以在这里确保。
+        // ==========================================================
+        console.log(`[INFO] Received response from tiu.me with status: ${apiRes.status}`);
+        // ==========================================================
 
         if (!apiRes.ok) {
-            // 如果上游 API 返回错误，也把错误状态码和信息返回给前端
-            console.error("Error from tiu.me API:", data);
-            return res.status(apiRes.status).json(data);
+            const errorText = await apiRes.text();
+            console.error(`[ERROR] Error from tiu.me API:`, errorText);
+            
+            let errorJson;
+            try {
+                errorJson = JSON.parse(errorText);
+            } catch (e) {
+                errorJson = { error: { message: `Upstream API returned a non-JSON error: ${errorText}` } };
+            }
+            return res.status(apiRes.status).json(errorJson);
         }
 
-        return res.status(200).json(data);
+        if (stream && apiRes.body) {
+            // ==========================================================
+            console.log("[INFO] Piping stream to client...");
+            // ==========================================================
+            res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+            res.setHeader('Cache-Control', 'no-cache');
+            res.setHeader('Connection', 'keep-alive');
+            res.status(200);
+            
+            // 下面我们将修改管道逻辑，以便能同时在终端打印出流的内容
+            const webStream = apiRes.body;
+            const teeStream = webStream.tee(); // 创建一个流的副本
+            
+            const reader = teeStream[0].getReader();
+            const decoder = new TextDecoder();
+            
+            (async () => {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) {
+                        console.log("\n[INFO] Upstream from tiu.me finished.");
+                        break;
+                    }
+                    // 在终端打印出原始的数据块！
+                    process.stdout.write(decoder.decode(value));
+                }
+            })();
+            
+            // 将另一个副本管道给前端
+            Readable.fromWeb(teeStream[1]).pipe(res);
+
+        } else {
+            // ==========================================================
+            console.log("[INFO] Sending non-streamed response to client...");
+            // ==========================================================
+            const data = await apiRes.json();
+            console.log("[DATA] Full JSON response from tiu.me:", data);
+            return res.status(200).json(data);
+        }
 
     } catch (error) {
-        console.error("Proxy request failed:", error);
-        // 如果代理请求本身失败（如网络问题）
+        console.error("[FATAL] Proxy request failed:", error);
         return res.status(500).json({ 
-            error: "Proxy server internal error: " + error.message,
+            error: { message: "Proxy server internal error: " + error.message },
             developerMessage: "检查 Vercel Function 日志和上游 API 状态。" 
         });
     }
