@@ -495,8 +495,6 @@
 <img src="https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/IMG_1353.JPG"/>
 <img src="https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/IMG_1352.JPG"/>
 <img src="https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/IMG_1351.JPG"/>
-<img src="https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/IMG_1350.JPG"/>
-<img src="https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/IMG_1349.JPG"/>
 <img src="https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/fca33f9a24e9a41fa72691182dcc306f.JPG"/>
 <img src="https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/e7a5dcab5e8a391e389f3d0d7bf54591.JPG"/>
 <img src="https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/DSC_4848-%E5%B7%B2%E5%A2%9E%E5%BC%BA-%E9%99%8D%E5%99%AA.jpg"/>
