@@ -18,10 +18,9 @@
     "url": "https://github.com/YizukiAme/8ban/issues"
   },
   "homepage": "https://github.com/YizukiAme/8ban#readme",
-  "dependencies": {
+  "devDependencies": {
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
-    "tailwindcss": "^4.1.10"
-  },
-  "devDependencies": {}
+    "tailwindcss": "^3.4.17"
+  }
 }
