@@ -9,7 +9,7 @@
     <script src="./js/marked.min.js"></script>
     <script src="./js/masonry.pkgd.min.js"></script>
     <script src="./js/imagesloaded.pkgd.min.js"></script>
-    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700&display=swap" rel="stylesheet">
     <!-- 资源预连接，提高加载速度 -->
     <link rel="preconnect" href="https://8ban-1311723413.cos.ap-shanghai.myqcloud.com">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
@@ -17,8 +17,49 @@
     <link rel="preconnect" href="https://api.jsonbin.io">
     <link rel="preconnect" href="https://api.siliconflow.cn">
     <link rel="preconnect" href="https://8ban.vercel.app/"> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     <style>
+        .classmate-card-initial {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        #classmates-area.fade-in .classmate-card-initial {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .classmate-detail-content .info-line .label {
+            display: flex; /* 让标签和图标可以在一行内对齐 */
+            align-items: center; /* 垂直居中对齐 */
+            width: 95px; /* 稍微加宽一点，为图标留出空间 */
+            color: #374151; /* 稍微柔和一点的黑色 (gray-700) */
+        }
+
+        .classmate-detail-content .info-line .label i {
+            color: #6366f1; /* 使用主题色 (indigo-500) */
+            width: 24px; /* 图标的宽度 */
+            text-align: center; /* 图标居中 */
+            margin-right: 10px; /* 图标和文字之间的间距 */
+            font-size: 0.9rem; /* 调整图标大小 */
+        }
+
+        .classmate-detail-content .info-line {
+            display: flex;
+            margin-bottom: 0.75rem; /* 12px, 保持行间距 */
+            font-size: 1rem; /* 16px */
+            line-height: 1.6;
+        }
+
+        .classmate-detail-content .info-line .data {
+            color: #4b5563;
+            /* 对于可能很长的邮箱，允许在任意位置断开，防止溢出 */
+            word-break: break-all;
+        }
+
         html, body {
             height: 100%;
             margin: 0;
@@ -453,21 +494,33 @@
             position: relative;
             overflow: hidden;
         }
+
         .classmate-card .avatar {
             width: 80px;
             height: 80px;
-            background-color: #6366f1;
             color: white;
-            font-size: 2.5rem;
+            
+            /* --- 字体与居中最终优化 --- */
+            font-family: 'Dengxian', 'Microsoft YaHei', sans-serif; /* 1. 更换为更可靠、现代的“等线”字体 */
+            font-size: 3rem; /* 保持大气字号 (48px) */
+            /* 2. 移除 line-height 和 padding-top，完全信赖 Flexbox 的 align-items: center 来实现完美居中 */
+
+            /* --- 以下保持不变，它们是 Flexbox 居中的核心 --- */
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
+            
+            /* --- 其他样式保持不变 --- */
             border-radius: 9999px;
             margin-bottom: 0.5rem;
             flex-shrink: 0;
             user-select: none;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.15), 0 5px 10px rgba(0,0,0,0.1);
+            border: 3px solid rgba(255, 255, 255, 0.6);
+            transition: transform 0.3s ease;
         }
+
         .classmate-detail-content {
             background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(20px);
@@ -690,6 +743,17 @@
     </style>
 </head>
 <body class="min-h-screen">
+
+<!-- 
+    Tailwind CSS Safelist (for dynamic classes)
+    This is a "magic comment" to ensure Tailwind CSS includes these classes in the final build,
+    even though they are generated dynamically in JavaScript.
+
+    bg-indigo-500 bg-blue-500 bg-sky-500 
+    bg-emerald-500 bg-amber-500 bg-rose-500 
+    bg-purple-500 bg-teal-500 bg-orange-500
+-->
+
     <div id="fixed-background"></div>
 
     <div id="loading-overlay" class="fixed inset-0 z-[2000] flex items-center justify-center bg-gray-900 transition-opacity duration-500 opacity-100">
@@ -848,7 +912,7 @@
         <section id="classmates-area" class="container mx-auto py-12 px-4 md:px-8 content-section">
             <div class="glassmorphism p-6 md:p-8 mb-16">
                 <h2 class="text-3xl font-bold mb-8 flex items-center text-gray-800">
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white mr-4 shadow-lg">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center text-white mr-4 shadow-lg">
                         <i class="fas fa-users text-xl"></i>
                     </div>
                     同学录
@@ -1981,7 +2045,17 @@
                     message: "去更远的地方，见更亮的光！"
                 },
                 {
-                    name: "你",
+                    name: "尹嗣涵",
+                    avatarInitials: "YS", // Yin Si
+                    studentId: "37",
+                    birthday: "0804",
+                    // 使用 <br> 标签代替 \n
+                    phone: "+86 15921820084 <br> +1 (706)-406-3832",
+                    email: "yinzimike@gmail.com <br> 209993928@qq.com",
+                    message: "沉默地示现。"
+                },
+                {
+                    name: "你！",
                     avatarInitials: "YOU",
                     studentId: "你没填问卷！",
                     birthday: "我不知道！",
@@ -1993,64 +2067,94 @@
 
             function populateClassmateCards() {
                 if (!classmateCardsGrid) return;
-                classmateCardsGrid.innerHTML = '';
-                classmatesData.forEach(classmate => {
-                    const cardDiv = document.createElement('div');
-                    cardDiv.classList.add('bg-white/70', 'backdrop-blur-sm', 'p-4', 'rounded-xl', 'shadow-lg', 'classmate-card', 'enhanced-card-hover', 'text-center', 'flex', 'flex-col', 'items-center', 'justify-content-center');
-                    
-                    // 确保 avatarInitials 至少有一个字符，如果姓名为空或无法提取，则使用默认值
-                    const initials = classmate.avatarInitials || (classmate.name ? classmate.name.substring(0, 1).toUpperCase() : '?');
 
+                const avatarColors = [
+                    'bg-sky-500',
+                    'bg-emerald-500',
+                    'bg-violet-500',
+                    'bg-orange-500',
+                    'bg-rose-500',
+                    'bg-teal-500'
+                ];
+
+                classmateCardsGrid.innerHTML = '';
+
+                classmatesData.forEach((classmate, index) => {
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = 'bg-white/70 backdrop-blur-sm p-4 rounded-xl shadow-lg classmate-card enhanced-card-hover text-center flex flex-col items-center justify-center classmate-card-initial';
+                    cardDiv.style.transitionDelay = `${index * 50}ms`;
+
+                    // 统一使用名字的最后一个字作为头像内容
+                    let avatarContent = classmate.name.slice(-1);
+                    if (classmate.name === "你！") {
+                        avatarContent = "你";
+                    }
+                    
+                    // 从预定义的颜色板中循环取色
+                    const colorClass = avatarColors[index % avatarColors.length];
+                    
                     const avatarHtml = `
-                        <div class="avatar bg-indigo-500">
-                            ${initials}
+                        <div class="avatar ${colorClass}">
+                            ${avatarContent}
                         </div>
                     `;
-                    const nameHtml = `<h4 class="text-xl font-semibold text-gray-800">${classmate.name}</h4>`;
+                    const nameHtml = `<h4 class="text-lg font-semibold text-gray-800 mt-2">${classmate.name}</h4>`;
 
                     cardDiv.innerHTML = avatarHtml + nameHtml;
 
-                    cardDiv.addEventListener('click', () => showClassmateDetailModal(classmate));
+                    // 绑定点击事件，并传入 index 以便弹窗能获取到正确的颜色
+                    cardDiv.addEventListener('click', () => showClassmateDetailModal(classmate, index));
                     classmateCardsGrid.appendChild(cardDiv);
                 });
             }
 
-            function showClassmateDetailModal(classmate) {
+            function showClassmateDetailModal(classmate, index) { // 1. 函数现在接收 index
                 if (!classmateDetailModal || !classmateDetailContentBody) return;
 
-                // 确保 avatarInitials 至少有一个字符，如果姓名为空或无法提取，则使用默认值
-                const initials = classmate.avatarInitials || (classmate.name ? classmate.name.substring(0, 1).toUpperCase() : '?');
+                // 定义与卡片列表完全相同的颜色板
+                const avatarColors = [
+                    'bg-indigo-500', 'bg-blue-500', 'bg-sky-500', 
+                    'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 
+                    'bg-purple-500', 'bg-teal-500', 'bg-orange-500'
+                ];
 
+                // 2. 弹窗头像也使用名字的最后一个字
+                let avatarContent = classmate.name.slice(-1);
+                if (classmate.name === "你！") {
+                    avatarContent = "你";
+                }
+
+                // 3. 使用 index 获取与卡片一致的颜色
+                const colorClass = avatarColors[index % avatarColors.length];
+
+                // 生成美化后的弹窗内容
                 classmateDetailContentBody.innerHTML = `
-                    <div class="avatar-large bg-blue-600">
-                        ${initials}
-                    </div>
-                    <h3>${classmate.name}</h3>
-                    <p><strong>学号：</strong>${classmate.studentId}</p>
-                    <p><strong>生日：</strong>${classmate.birthday}</p> <!-- 新增的生日显示 -->
-                    <p><strong>手机号：</strong>${classmate.phone}</p>
-                    <p><strong>邮箱：</strong>${classmate.email}</p>
-                    <p class="quote">"${classmate.message}"</p>
-                `;
-                classmateDetailModal.classList.add('open');
-            }
-
-            // ... (其他代码保持不变)
-
-
-            function showClassmateDetailModal(classmate) {
-                if (!classmateDetailModal || !classmateDetailContentBody) return;
-
-                classmateDetailContentBody.innerHTML = `
-                    <div class="avatar-large bg-blue-600">
-                        ${classmate.avatarInitials}
-                    </div>
-                    <h3>${classmate.name}</h3>
-                    <p><strong>学号：</strong>${classmate.studentId}</p>
-                    <p><strong>手机号：</strong>${classmate.phone}</p>
-                    <p><strong>邮箱：</strong>${classmate.email}</p>
-                    <p class="quote">"${classmate.message}"</p>
-                `;
+                <div class="avatar-large ${colorClass}">
+                    ${avatarContent}
+                </div>
+                <h3 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 text-center mb-6">${classmate.name}</h3>
+                
+                <div class="info-line">
+                    <span class="label"><i class="fas fa-id-card"></i>学号:</span>
+                    <div class="data">${classmate.studentId}</div>
+                </div>
+                <div class="info-line">
+                    <span class="label"><i class="fas fa-birthday-cake"></i>生日:</span>
+                    <div class="data">${classmate.birthday}</div>
+                </div>
+                <div class="info-line">
+                    <span class="label"><i class="fas fa-phone"></i>电话:</span>
+                    <div class="data">${classmate.phone}</div>
+                </div>
+                <div class="info-line">
+                    <span class="label"><i class="fas fa-envelope"></i>邮箱:</span>
+                    <div class="data">${classmate.email}</div>
+                </div>
+                
+                <div class="quote mt-6">
+                    <p>"${classmate.message}"</p>
+                </div>
+            `;
                 classmateDetailModal.classList.add('open');
             }
 
