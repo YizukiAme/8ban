@@ -808,8 +808,7 @@
             justify-content: center;
             align-items: center;
         }
-        #floating-birthday-hat i 
-            #floating-birthday-hat i {
+        #floating-birthday-hat i {
             /* 确保图标本身能够撑开父元素 */
             display: block; /* 让i标签成为块级元素，更容易控制尺寸 */
             line-height: 1; /* 消除行高影响，确保垂直居中 */
@@ -836,6 +835,63 @@
             /* transition: none; */ /* 拖动时禁用动画，将由JS控制 */
         }
         /* END: Floating Birthday Hat Styles */
+
+        /* START: Floating Cat Styles */
+        #floating-cat {
+            /* Initial state: hidden and not fixed */
+            display: none; /* Will be changed to flex when active */
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, transform 0.2s ease-out;
+
+            /* Common styles for both states */
+            z-index: 1500;
+            font-size: 60px;
+            color: #f472b6;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            cursor: grab;
+            user-select: none;
+            width: 60px;
+            height: 60px;
+            justify-content: center; /* For flexbox centering */
+            align-items: center; /* For flexbox centering */
+        }
+
+        #floating-cat.active {
+            display: flex; /* Make it visible */
+            opacity: 1;
+            position: fixed; /* Make it fixed when active */
+            /* Position will be controlled by JS for random movement */
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; transform: scale(0.5); }
+        }
+
+        .fish-trail {
+            position: fixed;
+            font-size: 20px; /* Smaller fish */
+            color: #60a5fa; /* Blue fish */
+            opacity: 0; /* Start hidden */
+            pointer-events: none; /* Do not block clicks */
+            animation: fadeOut 1.5s forwards; /* Fade out over 1.5 seconds */
+            z-index: 1499; /* Below the cat */
+            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        #floating-cat i {
+            display: block;
+            line-height: 1;
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important;
+        }
+
+        #floating-cat.dragging {
+            cursor: grabbing;
+            transform: scale(1.15);
+            transition: none; /* Disable transition during drag */
+        }
+        /* END: Floating Cat Styles */
     </style>
 </head>
 <body class="min-h-screen">
@@ -1207,6 +1263,14 @@
         </div>
         <!-- END: Floating Birthday Hat -->
    
+        
+   
+    <!-- START: Floating Cat -->
+        <div id="floating-cat">
+            <i class="fas fa-cat"></i>
+        </div>
+        <!-- END: Floating Cat -->
+
     </div><!-- This is the closing tag for #main-content-wrapper -->
 
     <script>
@@ -1220,6 +1284,233 @@
             const mobileMenuButton = document.getElementById('mobileMenuButton');
             const mobileMenu = document.getElementById('mobileMenu');
             const graduationTimer = document.getElementById('graduationTimer'); 
+
+            // START: Floating Cat Logic
+            // START: Floating Cat Logic
+            const floatingCat = document.getElementById('floating-cat');
+            let isDraggingCat = false;
+            let hasCatAppeared = false;
+            let catOffsetX, catOffsetY;
+            let vx = 0; // velocity x
+            let vy = 0; // velocity y
+            const gravity = 0.5; // pixels per frame squared
+            const bounceFactor = -0.7; // how much velocity is retained after bounce
+            let catanimationFrameId = null; // To store the requestAnimationFrame ID
+            const FISH_TRAIL_INTERVAL = 100; // Milliseconds between fish trail drops
+            let lastFishTrailTime = 0;
+
+            // Variables for tracking velocity during drag
+            let lastCatX = 0;
+            let lastCatY = 0;
+            let lastCatMoveTime = 0;
+
+            // Function to create a fish trail element
+            function createFishTrail(x, y) {
+                const now = Date.now();
+                if (now - lastFishTrailTime < FISH_TRAIL_INTERVAL) return; // Throttle fish trail creation
+
+                const fish = document.createElement('i');
+                fish.classList.add('fas', 'fa-fish', 'fish-trail'); // Using fa-fish for now, can be changed to fa-bone for fishbone
+                fish.style.left = `${x}px`;
+                fish.style.top = `${y}px`;
+                document.body.appendChild(fish);
+
+                // Remove fish after its animation is done to prevent DOM bloat
+                fish.addEventListener('animationend', () => {
+                    fish.remove();
+                });
+                lastFishTrailTime = now;
+            }
+
+            // Physics animation loop
+            function animateCat() {
+                if (isDraggingCat || !hasCatAppeared) {
+                    catanimationFrameId = null;
+                    return;
+                }
+
+                // Apply gravity
+                vy += gravity;
+
+                let currentX = parseFloat(floatingCat.style.left);
+                let currentY = parseFloat(floatingCat.style.top);
+
+                // Update position
+                currentX += vx;
+                currentY += vy;
+
+                // Boundary collision detection
+                const catWidth = floatingCat.offsetWidth;
+                const catHeight = floatingCat.offsetHeight;
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+
+                // Right wall
+                if (currentX + catWidth > viewportWidth) {
+                    currentX = viewportWidth - catWidth;
+                    vx *= bounceFactor;
+                }
+                // Left wall
+                if (currentX < 0) {
+                    currentX = 0;
+                    vx *= bounceFactor;
+                }
+                // Bottom floor
+                if (currentY + catHeight > viewportHeight) {
+                    currentY = viewportHeight - catHeight;
+                    vy *= bounceFactor;
+                    // Reduce horizontal velocity slightly on bounce
+                    vx *= 0.9;
+                    // If velocity is very small, stop to prevent infinite micro-bounces
+                    if (Math.abs(vy) < 1) vy = 0;
+                }
+                // Top ceiling
+                if (currentY < 0) {
+                    currentY = 0;
+                    vy *= bounceFactor;
+                }
+
+                floatingCat.style.left = `${currentX}px`;
+                floatingCat.style.top = `${currentY}px`;
+
+                // Create fish trail at current position
+                createFishTrail(currentX + catWidth / 2, currentY + catHeight / 2);
+
+                catanimationFrameId = requestAnimationFrame(animateCat);
+            }
+
+            // Function to start physics movement
+            function startCatMovement() {
+                if (catanimationFrameId === null) {
+                    catanimationFrameId = requestAnimationFrame(animateCat);
+                }
+            }
+
+            // Function to stop physics movement
+            function stopCatMovement() {
+                if (catanimationFrameId !== null) {
+                    cancelAnimationFrame(catanimationFrameId);
+                    catanimationFrameId = null;
+                }
+            }
+
+            // Function to handle mousedown for dragging
+            const handleCatMouseDown = (e) => {
+                if (!floatingCat.classList.contains('active')) return;
+                isDraggingCat = true;
+                floatingCat.classList.add('dragging');
+                catOffsetX = e.clientX - floatingCat.getBoundingClientRect().left;
+                catOffsetY = e.clientY - floatingCat.getBoundingClientRect().top;
+                floatingCat.style.transition = 'none'; // Disable transition during drag
+                stopCatMovement(); // Stop physics movement when dragging starts
+
+                // Reset velocity and last position/time for new drag
+                vx = 0;
+                vy = 0;
+                lastCatX = floatingCat.getBoundingClientRect().left;
+                lastCatY = floatingCat.getBoundingClientRect().top;
+                lastCatMoveTime = Date.now();
+            };
+
+            // Function to handle mousemove for dragging
+            const handleCatMouseMove = (e) => {
+                if (!isDraggingCat) return;
+                e.preventDefault();
+                const newX = e.clientX - catOffsetX;
+                const newY = e.clientY - catOffsetY;
+
+                // Keep cat within viewport
+                const maxX = window.innerWidth - floatingCat.offsetWidth;
+                const maxY = window.innerHeight - floatingCat.offsetHeight;
+
+                const clampedX = Math.max(0, Math.min(newX, maxX));
+                const clampedY = Math.max(0, Math.min(newY, maxY));
+
+                floatingCat.style.left = `${clampedX}px`;
+                floatingCat.style.top = `${clampedY}px`;
+
+                // Calculate velocity
+                const currentTime = Date.now();
+                const deltaTime = currentTime - lastCatMoveTime;
+
+                if (deltaTime > 0) { // Avoid division by zero
+                    vx = (clampedX - lastCatX) / deltaTime * 60; // Scale to pixels per second (approx 60 frames per second)
+                    vy = (clampedY - lastCatY) / deltaTime * 60;
+                }
+
+                lastCatX = clampedX;
+                lastCatY = clampedY;
+                lastCatMoveTime = currentTime;
+
+                // Create fish trail while dragging
+                createFishTrail(e.clientX, e.clientY);
+            };
+
+            // Function to handle mouseup for dragging
+            const handleCatMouseUp = (e) => {
+                if (isDraggingCat) {
+                    isDraggingCat = false;
+                    floatingCat.classList.remove('dragging');
+                    floatingCat.style.transition = 'transform 0.2s ease-out, opacity 0.3s ease-in-out'; // Re-enable transition for random movement
+
+                    // Apply a damping factor to the release velocity
+                    vx *= 0.8; // Reduce velocity slightly on release
+                    vy *= 0.8;
+
+                    startCatMovement(); // Start physics movement with the calculated velocity
+                }
+            };
+
+            // Function to handle confetti on click
+            const handleCatClick = (e) => {
+                if (!isDraggingCat && floatingCat.classList.contains('active')) { // Only trigger if not dragging and active
+                    const x = e.clientX / window.innerWidth;
+                    const y = e.clientY / window.innerHeight;
+                    confetti({
+                        particleCount: 100,
+                        spread: 70,
+                        origin: { x: x, y: y },
+                        colors: ['#f472b6', '#8b5cf6', '#3b82f6', '#ef4444', '#f97316']
+                    });
+                }
+            };
+
+            if (floatingCat) {
+                // Attach event listeners once
+                floatingCat.addEventListener('mousedown', handleCatMouseDown);
+                document.addEventListener('mousemove', handleCatMouseMove);
+                document.addEventListener('mouseup', handleCatMouseUp);
+                floatingCat.addEventListener('click', handleCatClick);
+
+                // Scroll logic for cat visibility
+                if (mainContentWrapper) {
+                    mainContentWrapper.addEventListener('scroll', () => {
+                        const isAtBottom = mainContentWrapper.scrollHeight - mainContentWrapper.scrollTop <= mainContentWrapper.clientHeight + 100; // Add a small buffer
+                        if (isAtBottom) {
+                            if (!hasCatAppeared) { // Only set initial position and start movement once
+                                floatingCat.classList.add('active');
+                                hasCatAppeared = true; // Set flag to true once cat appears
+                                // Set initial position to bottom-right, or a random position if preferred
+                                floatingCat.style.left = `${window.innerWidth - floatingCat.offsetWidth - 50}px`;
+                                floatingCat.style.top = `${window.innerHeight - floatingCat.offsetHeight - 50}px`;
+                                // Give it an initial upward bounce
+                                vx = (Math.random() - 0.5) * 5; // Small random horizontal velocity
+                                vy = -Math.random() * 10 - 5; // Initial upward velocity
+                                startCatMovement(); // Start physics movement
+                            }
+                        } else if (!hasCatAppeared) { // Only hide if it hasn't appeared yet
+                            floatingCat.classList.remove('active');
+                            isDraggingCat = false; // Ensure dragging stops if scrolled away
+                            floatingCat.classList.remove('dragging');
+                            floatingCat.style.transition = 'transform 0.2s ease-out, opacity 0.3s ease-in-out'; // Re-enable transition
+                            stopCatMovement(); // Stop physics movement when hidden
+                        }
+                    });
+                }
+            } else {
+                console.error("Floating cat element not found!");
+            }
+            // END: Floating Cat Logic
 
             const productionVideos = [
                 "https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/%E3%80%8A%E6%98%8E%E6%97%A5%E6%96%B9%E8%88%9F%E3%80%8BSideStory%E3%80%8C%E6%80%80%E9%BB%8D%E7%A6%BB%E3%80%8D%E6%B4%BB%E5%8A%A8%E5%AE%A3%E4%BC%A0PV_P2_%E3%80%90%E6%97%A5%E3%80%91%E3%80%8A%E6%98%8E%E6%97%A5%E6%96%B9%E8%88%9F%E3%80%8BSideStory%E3%80%8C%E6%80%80%E9%BB%8D%E7%A6%BB%E3%80%8D%E6%B4%BB%E5%8A%A8%E5%AE%A3%E4%BC%A0PV.mp4",
@@ -1977,7 +2268,7 @@
                     phone: "18917035967", email: "15618752036@163.com", message: "nothing is impossible"
                 },
                 {
-                    name: "你！", avatarInitials: "YOU", studentId: "你没填问卷！", birthday: "0627！",  // Test date
+                    name: "你！", avatarInitials: "YOU", studentId: "你没填问卷！", birthday: "我不知道！",  // Test date
                     phone: "这个也不知道！", email: "这个还是不知道！", message: "对于不可言说的，我们只能保持沉默 —— 奥地利哲学家 路德维希 · 维特根斯坦"
                 }
             ];
@@ -2282,7 +2573,7 @@
             let hatX, hatY, hatVx, hatVy; // 位置(px) 和 速度(px/s)
             let isDragging = false;
             let dragOffsetX, dragOffsetY;
-            let animationFrameId;
+            let hatanimationFrameId;
             let lastPhysicsTime = 0;
             let hatWidth = 0, hatHeight = 0;
             let wasDragged = false; // 用于区分点击和拖拽
@@ -2341,7 +2632,7 @@
             function hideFloatingHat() {
                 if (!hatElement) return;
                 hatElement.classList.add('hidden');
-                cancelAnimationFrame(animationFrameId); // 停止物理循环
+                cancelAnimationFrame(hatanimationFrameId); // 停止物理循环
                 console.log("生日帽已隐藏并停止物理模拟。");
             }
             
@@ -2357,7 +2648,7 @@
             function physicsLoop(currentTime) {
                 if (lastPhysicsTime === 0) {
                     lastPhysicsTime = currentTime;
-                    animationFrameId = requestAnimationFrame(physicsLoop);
+                    hatanimationFrameId = requestAnimationFrame(physicsLoop);
                     return;
                 }
 
@@ -2399,13 +2690,13 @@
                 }
 
                 updateHatPosition();
-                animationFrameId = requestAnimationFrame(physicsLoop);
+                hatanimationFrameId = requestAnimationFrame(physicsLoop);
             }
 
             function startPhysicsLoop() {
-                cancelAnimationFrame(animationFrameId); // 确保只有一个循环
+                cancelAnimationFrame(hatanimationFrameId); // 确保只有一个循环
                 lastPhysicsTime = 0;
-                animationFrameId = requestAnimationFrame(physicsLoop);
+                hatanimationFrameId = requestAnimationFrame(physicsLoop);
             }
 
             // --- 拖拽事件处理 ---
@@ -2417,7 +2708,7 @@
                 isDragging = true;
                 hatElement.classList.add('dragging');
                 hatElement.style.transform = 'scale(1.15)';
-                cancelAnimationFrame(animationFrameId); // 拖拽时暂停物理
+                cancelAnimationFrame(hatanimationFrameId); // 拖拽时暂停物理
 
                 const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
                 const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
