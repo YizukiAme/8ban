@@ -1394,15 +1394,20 @@
                 }
             }
 
-            // Function to handle mousedown for dragging
-            const handleCatMouseDown = (e) => {
+            // Function to handle start of drag (mousedown or touchstart)
+            const handleCatStart = (e) => {
                 if (!floatingCat.classList.contains('active')) return;
                 isDraggingCat = true;
                 floatingCat.classList.add('dragging');
-                catOffsetX = e.clientX - floatingCat.getBoundingClientRect().left;
-                catOffsetY = e.clientY - floatingCat.getBoundingClientRect().top;
                 floatingCat.style.transition = 'none'; // Disable transition during drag
                 stopCatMovement(); // Stop physics movement when dragging starts
+
+                // Determine offset based on event type
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                catOffsetX = clientX - floatingCat.getBoundingClientRect().left;
+                catOffsetY = clientY - floatingCat.getBoundingClientRect().top;
 
                 // Reset velocity and last position/time for new drag
                 vx = 0;
@@ -1410,14 +1415,21 @@
                 lastCatX = floatingCat.getBoundingClientRect().left;
                 lastCatY = floatingCat.getBoundingClientRect().top;
                 lastCatMoveTime = Date.now();
+
+                e.preventDefault(); // Prevent default touch behavior (like scrolling)
             };
 
-            // Function to handle mousemove for dragging
-            const handleCatMouseMove = (e) => {
+            // Function to handle move (mousemove or touchmove)
+            const handleCatMove = (e) => {
                 if (!isDraggingCat) return;
                 e.preventDefault();
-                const newX = e.clientX - catOffsetX;
-                const newY = e.clientY - catOffsetY;
+
+                // Determine clientX/Y based on event type
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                const newX = clientX - catOffsetX;
+                const newY = clientY - catOffsetY;
 
                 // Keep cat within viewport
                 const maxX = window.innerWidth - floatingCat.offsetWidth;
@@ -1443,11 +1455,11 @@
                 lastCatMoveTime = currentTime;
 
                 // Create fish trail while dragging
-                createFishTrail(e.clientX, e.clientY);
+                createFishTrail(clientX, clientY);
             };
 
-            // Function to handle mouseup for dragging
-            const handleCatMouseUp = (e) => {
+            // Function to handle end of drag (mouseup or touchend)
+            const handleCatEnd = () => {
                 if (isDraggingCat) {
                     isDraggingCat = false;
                     floatingCat.classList.remove('dragging');
@@ -1477,9 +1489,12 @@
 
             if (floatingCat) {
                 // Attach event listeners once
-                floatingCat.addEventListener('mousedown', handleCatMouseDown);
-                document.addEventListener('mousemove', handleCatMouseMove);
-                document.addEventListener('mouseup', handleCatMouseUp);
+                floatingCat.addEventListener('mousedown', handleCatStart);
+                floatingCat.addEventListener('touchstart', handleCatStart, { passive: false });
+                document.addEventListener('mousemove', handleCatMove);
+                document.addEventListener('touchmove', handleCatMove, { passive: false });
+                document.addEventListener('mouseup', handleCatEnd);
+                document.addEventListener('touchend', handleCatEnd);
                 floatingCat.addEventListener('click', handleCatClick);
 
                 // Scroll logic for cat visibility
