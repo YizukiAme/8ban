@@ -9,6 +9,9 @@
     <script src="./js/marked.min.js"></script>
     <script src="./js/masonry.pkgd.min.js"></script>
     <script src="./js/imagesloaded.pkgd.min.js"></script>
+    <!-- START: Add Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <!-- END: Add Confetti Library -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700&display=swap" rel="stylesheet">
     <!-- 资源预连接，提高加载速度 -->
     <link rel="preconnect" href="https://8ban-1311723413.cos.ap-shanghai.myqcloud.com">
@@ -740,6 +743,99 @@
                 line-height: 1.2; /* 调整整体行高，使两行更紧凑 */
             }
         }
+
+        /* START: Birthday Celebration Styles */
+        .birthday-modal {
+            display: none; /* 默认隐藏 */
+            position: fixed;
+            z-index: 2000; /* 确保在最顶层 */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+        }
+
+        .birthday-modal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .birthday-modal-content {
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            position: relative;
+            width: 90%;
+            max-width: 450px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 240, 245, 0.95) 100%); /* 淡雅的粉色渐变 */
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transform: scale(0.9);
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease-out;
+        }
+
+        .birthday-modal.show .birthday-modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        /* 这是生日触发器的样式，它本身是不可见的 */
+        #birthday-trigger {
+            height: 1px;
+            width: 100%;
+        }
+        
+        /* START: Floating Birthday Hat Styles */
+        #floating-birthday-hat {
+            position: fixed;
+            z-index: 1500;
+            color: #f472b6;
+            font-size: 60px; /* 保持字体大小 */
+            text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            cursor: grab;
+            user-select: none;
+            /* 确保元素有实际渲染尺寸 */
+            width: 60px; /* 明确宽度 */
+            height: 60px; /* 明确高度 */
+            display: flex; /* 使用flexbox居中图标 */
+            justify-content: center;
+            align-items: center;
+        }
+        #floating-birthday-hat i 
+            #floating-birthday-hat i {
+            /* 确保图标本身能够撑开父元素 */
+            display: block; /* 让i标签成为块级元素，更容易控制尺寸 */
+            line-height: 1; /* 消除行高影响，确保垂直居中 */
+            font-family: "Font Awesome 6 Free" !important; /* 强制使用 Font Awesome 字体 */
+            font-weight: 900 !important; /* Font Awesome Solid 图标通常需要这个字重 */
+        }
+        
+        #floating-birthday-hat.hidden {
+            display: none; /* 确保这个类能彻底隐藏帽子 */
+        }
+
+        #floating-birthday-hat.visible {
+            /* 这个类将不再用于CSS动画，可以移除或保留为空 */
+        }
+        
+        /* 新增一个隐藏类，确保初始状态是隐藏的 */
+        #floating-birthday-hat.hidden {
+            display: none;
+        }
+
+        #floating-birthday-hat.dragging {
+            cursor: grabbing;
+            /* transform: scale(1.15); */ /* 拖动时放大一点，将由JS控制 */
+            /* transition: none; */ /* 拖动时禁用动画，将由JS控制 */
+        }
+        /* END: Floating Birthday Hat Styles */
     </style>
 </head>
 <body class="min-h-screen">
@@ -828,6 +924,10 @@
             <i id="scrollDownArrow" class="fas fa-chevron-down scroll-down-arrow"></i>
         </div>
 
+        <!-- START: Birthday Trigger Element -->
+        <div id="birthday-trigger"></div>
+        <!-- END: Birthday Trigger Element -->
+
         <section id="intro-content" class="container mx-auto py-16 px-4 md:px-8 content-section">
             <div class="max-w-4xl mx-auto text-center">
                 <p class="text-xl md:text-2xl text-white mb-8" style="text-shadow: 0 2px 8px rgba(0,0,0,0.5);">
@@ -861,14 +961,14 @@
                     </div>
 
                     <div class="text-center flex flex-wrap justify-center gap-4 mt-4">
-                    <button id="change-photos-button" class="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-2 rounded-lg transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                        <i class="fas fa-sync-alt mr-2"></i>再来一批！
-                    </button>
-                    <a href="https://pan.quark.cn/s/7655460244b8" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center">
-                        <i class="fas fa-cloud-download-alt mr-2"></i>我全都要？
-                    </a>
+                        <button id="change-photos-button" class="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-2 rounded-lg transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                            <i class="fas fa-sync-alt mr-2"></i>再来一批！
+                        </button>
+                        <a href="https://pan.quark.cn/s/7655460244b8" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center">
+                            <i class="fas fa-cloud-download-alt mr-2"></i>我全都要？
+                        </a>
+                    </div>
                 </div>
-
 
                 <div class="mb-8">
                     <h3 class="text-xl font-semibold mb-4 text-gray-700">
@@ -992,7 +1092,7 @@
 
         <div id="chatModal" class="modal">
             <div class="modal-content">
-                <span class="modal-cgglose" id="closeChatModalButton">×</span>
+                <span class="modal-close" id="closeChatModalButton">×</span>
                 <h3 class="text-2xl font-bold text-gray-800 mb-4">
                     <i class="fas fa-robot mr-2"></i>小八
                     <select id="modelSelect" class="ml-4 text-base px-3 py-1 rounded-lg bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -1077,12 +1177,38 @@
                         <p class="text-gray-600 text-sm mr-4">Designed by <a href="https://github.com/YizukiAme" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:text-blue-700 hover:underline">Yizuki_Ame</a></p>
                         <p class="text-gray-600 text-sm mr-4"><a href="mailto:yinzimike@gmail.com" class="text-blue-500 hover:text-blue-700 hover:underline">yinzimike@gmail.com</a></p>
                         <!-- 在这里添加新的联系信息 -->              
-                        </div>
                     </div>
                 </div>
             </div>
         </footer>
+
+        <!-- START: Birthday Celebration Modal (UPDATED) -->
+        <div id="birthday-celebration-modal" class="birthday-modal">
+            <div class="birthday-modal-content">
+                <span id="close-birthday-modal" class="modal-close">×</span>
+                <div class="text-center">
+                    <i class="fas fa-birthday-cake text-5xl text-pink-400 mb-4 animate-bounce"></i>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">生日快乐！</h2>
+                    <p id="birthday-modal-message" class="text-lg text-gray-600 mb-6">祝我们亲爱的同学</p>
+                    
+                    <!-- NEW: Link to Classmates Section -->
+                    <a href="#classmates-area" id="modal-goto-classmates" 
+                       class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                        <i class="fas fa-users mr-2"></i>查看同学录
+                    </a>
+                </div>
+            </div>
+        </div>
+        <!-- END: Birthday Celebration Modal -->
+
+        <!-- START: Floating Birthday Hat -->
+        <div id="floating-birthday-hat" class="hidden">
+            <i class="fas fa-birthday-cake"></i>
+        </div>
+        <!-- END: Floating Birthday Hat -->
    
+    </div><!-- This is the closing tag for #main-content-wrapper -->
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const mainNav = document.getElementById('mainNav');
@@ -1103,7 +1229,6 @@
                 "https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/%E3%80%8A%E6%98%8E%E6%97%A5%E6%96%B9%E8%88%9F%E3%80%8BSideStory%E3%80%8C%E6%95%AC%E4%B8%9A%E9%9B%86%E5%B8%82%E3%80%8D%E6%B4%BB%E5%8A%A8%E5%AE%A3%E4%BC%A0PV.mp4"
             ];
 
-            // 定义“小日常”视频列表
             const dailyVideos = [
                 "https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/IMG_5811.MOV",
                 "https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/IMG_3142.MOV",
@@ -1129,50 +1254,32 @@
                 "https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/ef9658346c5c69e209e86d623e1fe6a1_raw.mp4"
             ];
 
-            /**
-             * 随机加载并插入视频到指定容器
-             * @param {string} containerId - 视频容器的ID
-             * @param {Array<string>} videoList - 视频URL数组
-             */
             function loadRandomVideo(containerId, videoList) {
                 const container = document.getElementById(containerId);
                 if (!container) {
                     console.error(`错误：未找到ID为 '${containerId}' 的视频容器。`);
                     return;
                 }
-
                 if (videoList.length === 0) {
                     container.innerHTML = `<p class="text-white text-lg">暂无视频可播放。</p>`;
                     return;
                 }
-
-                // 随机选择一个视频URL
                 const randomIndex = Math.floor(Math.random() * videoList.length);
                 const selectedVideoUrl = videoList[randomIndex];
-
-                // 创建 <video> 元素
                 const videoElement = document.createElement('video');
                 videoElement.src = selectedVideoUrl;
-                videoElement.controls = true; // 显示播放控制条
-                videoElement.preload = "metadata"; // 预加载视频元数据（如时长、尺寸），提高用户体验
-                // 应用 Tailwind CSS 样式，使其填充容器并保持圆角
+                videoElement.controls = true;
+                videoElement.preload = "metadata";
                 videoElement.classList.add('w-full', 'h-full', 'object-cover', 'rounded-lg');
-
-                // 可选：设置视频封面图。如果不需要，可以删除此行。
                 videoElement.poster = "https://8ban-1311723413.cos.ap-shanghai.myqcloud.com/images/36121664_p0.png"
-
-                // 清空容器内容，并插入新的视频元素
                 container.innerHTML = '';
                 container.appendChild(videoElement);
-
-                // 添加错误处理：如果视频加载失败，显示提示信息
                 videoElement.addEventListener('error', function() {
                     console.error(`视频加载失败: ${selectedVideoUrl}`);
                     container.innerHTML = `<p class="text-red-400 text-lg">视频加载失败，请检查网络或视频源。</p>`;
                 });
             }
 
-            // 在 DOMContentLoaded 事件中调用函数，加载随机视频
             loadRandomVideo('productionVideoContainer', productionVideos);
             loadRandomVideo('dailyVideoContainer', dailyVideos);
             
@@ -1184,21 +1291,17 @@
                     initialTimeDiffMs -= 1000; 
                     let isAfterGraduation = initialTimeDiffMs < 0;
                     let absDiffMs = Math.abs(initialTimeDiffMs);
-
                     const seconds = Math.floor(absDiffMs / 1000) % 60;
                     const minutes = Math.floor(absDiffMs / (1000 * 60)) % 60;
                     const hours = Math.floor(absDiffMs / (1000 * 60 * 60)) % 24;
                     const days = Math.floor(absDiffMs / (1000 * 60 * 60 * 24));
-
                     let timerText = '';
                     if (days > 0) {
                         timerText += `${days}天 `;
                     } else if (isAfterGraduation && days === 0) {
                         timerText += `0天 `;
                     }
-
                     timerText += `${String(hours).padStart(2, '0')}小时 ${String(minutes).padStart(2, '0')}分钟 ${String(seconds).padStart(2, '0')}秒`;
-
                     if (isAfterGraduation) {
                         graduationTimer.textContent = `离毕业已过 ${timerText}`;
                         graduationTimer.style.backgroundColor = 'rgba(255, 99, 71, 0.7)';
@@ -1235,7 +1338,6 @@
                 const images = isMobile ? mobileImages : desktopImages;
                 const randomIndex = Math.floor(Math.random() * images.length);
                 const selectedImageUrl = images[randomIndex];
-                
                 if (fixedBackground && selectedImageUrl) {
                     fixedBackground.style.backgroundImage = `url('${selectedImageUrl}')`;
                 } else {
@@ -1250,21 +1352,12 @@
                     const titleDiv = mainNav.querySelector('.text-xl.font-bold');
                     const navLinks = mainNav.querySelectorAll('a');
                     const mobileBtn = mainNav.querySelector('#mobileMenuButton');
-
                     if (isInitial) {
-                        titleDiv.style.backgroundImage = 'none';
-                        titleDiv.style.webkitBackgroundClip = 'initial';
-                        titleDiv.style.webkitTextFillColor = 'white';
                         titleDiv.style.color = 'white';
-
                         navLinks.forEach(link => link.style.color = 'white');
                         if (mobileBtn) mobileBtn.style.color = 'white';
                     } else {
-                        titleDiv.style.backgroundImage = ''; 
-                        titleDiv.style.webkitBackgroundClip = '';
-                        titleDiv.style.webkitTextFillColor = '';
                         titleDiv.style.color = '';
-
                         navLinks.forEach(link => link.style.color = '');
                         if (mobileBtn) mobileBtn.style.color = '';
                     }
@@ -1333,13 +1426,9 @@
                 anchor.addEventListener('click', function (e) {
                     e.preventDefault();
                     const targetId = this.getAttribute('href');
-                    
                     if (targetId === '#top-of-page' || targetId === '#') {
                         if (mainContentWrapper) {
-                            mainContentWrapper.scrollTo({
-                                top: 0,
-                                behavior: 'smooth'
-                            });
+                            mainContentWrapper.scrollTo({ top: 0, behavior: 'smooth' });
                         } else {
                             window.scrollTo({ top: 0, behavior: 'smooth' });
                         }
@@ -1347,18 +1436,11 @@
                         const targetElement = document.querySelector(targetId);
                         if (targetElement && mainContentWrapper) {
                             const offsetTop = targetElement.offsetTop;
-                            mainContentWrapper.scrollTo({
-                                top: offsetTop,
-                                behavior: 'smooth',
-                            });
+                            mainContentWrapper.scrollTo({ top: offsetTop, behavior: 'smooth' });
                         } else if (targetElement) {
-                                targetElement.scrollIntoView({
-                                behavior: 'smooth',
-                                block: 'start'
-                            });
+                            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         }
                     }
-                    
                     if (mobileMenu && mobileMenu.classList.contains('active')) {
                         mobileMenu.classList.remove('active');
                         const icon = mobileMenuButton.querySelector('i');
@@ -1372,16 +1454,9 @@
                 scrollDownArrow.addEventListener('click', function() {
                     const firstContentSection = document.getElementById('intro-content');
                     if (firstContentSection && mainContentWrapper) {
-                        mainContentWrapper.scrollTo({
-                            top: firstContentSection.offsetTop,
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
+                        mainContentWrapper.scrollTo({ top: firstContentSection.offsetTop, behavior: 'smooth', block: 'start' });
                     } else if (firstContentSection) {
-                            firstContentSection.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
+                        firstContentSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
                 });
             }
@@ -1524,7 +1599,7 @@
                     isInternal: true,
                     supportsSystemRole: true,
                     endpointIsProxy: false,
-                    supportsStreaming: true // 新增：支持流式传输
+                    supportsStreaming: true
                 },
                 domestic_inference: {
                     name: "推理小八 (国内版)",
@@ -1534,7 +1609,7 @@
                     isInternal: true,
                     supportsSystemRole: true,
                     endpointIsProxy: false,
-                    supportsStreaming: true // 新增：支持流式传输
+                    supportsStreaming: true
                 },
                 international_normal: {
                     name: "普通小八 (国际版)",
@@ -1544,7 +1619,7 @@
                     isInternal: false,
                     supportsSystemRole: true,
                     endpointIsProxy: true,
-                    supportsStreaming: true // 新增：支持流式传输
+                    supportsStreaming: true
                 },
                 international_inference: {
                     name: "推理小八 (国际版)",
@@ -1554,7 +1629,7 @@
                     isInternal: false,
                     supportsSystemRole: true,
                     endpointIsProxy: true,
-                    supportsStreaming: true // 新增：支持流式传输
+                    supportsStreaming: true
                 }
             };
 
@@ -1582,38 +1657,25 @@
                 });
             }
 
-            // ==========================================================
-            // VVVVVV  核心修改区域  VVVVVV
-            // ==========================================================
-                        // 新增一个独立的模拟打字机函数
             async function simulateTyping(text, primaryDiv, secondaryDiv) {
                 const mainChatContainer = document.getElementById('chatMessages');
                 const modalChatContainer = document.getElementById('modalChatMessages');
                 let currentText = '';
-
-                // 清空初始的加载动画
                 primaryDiv.innerHTML = '';
                 if(secondaryDiv) secondaryDiv.innerHTML = '';
-
                 for (let i = 0; i < text.length; i++) {
                     currentText += text[i];
                     const cursor = (i < text.length - 1) ? '▌' : '';
                     const contentToRender = marked.parse(currentText + cursor);
-                    
                     primaryDiv.innerHTML = contentToRender;
                     if(secondaryDiv) secondaryDiv.innerHTML = contentToRender;
-
-                    // 滚动到底部
                     if (mainChatContainer) mainChatContainer.scrollTop = mainChatContainer.scrollHeight;
                     if (modalChatContainer && modalChatContainer.offsetParent !== null) {
                         modalChatContainer.scrollTop = modalChatContainer.scrollHeight;
                     }
-
-                    // 控制打字速度
                     const delay = (text[i] === '，' || text[i] === '。' || text[i] === '！' || text[i] === '\n') ? 120 : 25;
                     await new Promise(resolve => setTimeout(resolve, delay));
                 }
-                // 确保最终渲染没有光标
                 primaryDiv.innerHTML = marked.parse(text);
                 if(secondaryDiv) secondaryDiv.innerHTML = marked.parse(text);
             }
@@ -1622,30 +1684,23 @@
                 const url = modelConfig.baseURL;
                 const headers = { 'Content-Type': 'application/json' };
                 let body;
-
-                // ==========================================================
-                // VVVVVV  核心修改区域：智能判断流式或非流式  VVVVVV
-                // ==========================================================
-                
-                // 国内模型（SiliconFlow）是真的流式，我们用真流式
-                // 国际模型（tiu.me 代理的 Gemini）是假的流式，我们用非流式+模拟打字
                 const shouldUseNativeStream = modelConfig.name.includes("国内");
 
-                if (modelConfig.endpointIsProxy) { // 对应 Gemini
+                if (modelConfig.endpointIsProxy) {
                     body = {
                         modelId: modelConfig.model,
                         conversationHistory: history,
                         systemInstruction: SYSTEM_INSTRUCTION_TEXT,
-                        stream: false // 对Gemini强制用非流式，获取完整回答
+                        stream: false
                     };
-                } else { // 对应国内模型
+                } else {
                     if (modelConfig.apiKey.includes("YOUR_")) throw new Error(`请先在代码中设置 ${modelConfig.name} 的真实 API Key 才能使用！`);
                     headers['Authorization'] = `Bearer ${modelConfig.apiKey}`;
                     const requestMessages = [
                         { role: "system", content: SYSTEM_INSTRUCTION_TEXT },
                         ...history.map(msg => ({ role: msg.role === "model" ? "assistant" : msg.role, content: msg.parts[0].text }))
                     ];
-                    body = { model: modelConfig.model, messages: requestMessages, stream: true }; // 国内模型用真流式
+                    body = { model: modelConfig.model, messages: requestMessages, stream: true };
                 }
 
                 const response = await fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body) });
@@ -1663,15 +1718,12 @@
                 }
 
                 if (shouldUseNativeStream) {
-                    // --- 真·流式处理逻辑 (用于国内模型) ---
                     if (!response.body) throw new Error("Response body is not a readable stream.");
-                    
                     const reader = response.body.getReader();
                     const decoder = new TextDecoder("utf-8");
                     let fullResponseText = "";
                     let buffer = ""; 
                     let streamDone = false;
-
                     const mainChatContainer = document.getElementById('chatMessages');
                     const modalChatContainer = document.getElementById('modalChatMessages');
                     let lastRenderTime = 0;
@@ -1715,21 +1767,14 @@
                     aiMessageDiv.innerHTML = marked.parse(fullResponseText);
                     modalAiMessageDiv.innerHTML = marked.parse(fullResponseText);
                     return fullResponseText;
-
                 } else {
-                    // --- 模拟打字机逻辑 (用于国际模型) ---
                     const data = await response.json();
                     const fullResponseText = data.choices?.[0]?.message?.content || "";
                     if (!fullResponseText) throw new Error("AI did not return a valid message.");
-                    
                     await simulateTyping(fullResponseText, aiMessageDiv, modalAiMessageDiv);
                     return fullResponseText;
                 }
-                // ==========================================================
-                // ^^^^^^  核心修改区域：智能判断流式或非流式  ^^^^^^
-                // ==========================================================
             }
-
 
             function addMessageToChat(text, sender, container) {
                 const messageDiv = document.createElement('div');
@@ -1739,37 +1784,28 @@
                     messageDiv.innerHTML = `<p>${text}</p>`;
                 } else {
                     messageDiv.classList.add('chat-bubble-ai');
-                    messageDiv.innerHTML = marked.parse(text); // marked.parse 会处理 Markdown
+                    messageDiv.innerHTML = marked.parse(text);
                 }
                 container.appendChild(messageDiv);
                 container.scrollTop = container.scrollHeight;
-                return messageDiv; // 返回创建的元素，以便后续更新
+                return messageDiv;
             }
 
             async function handleSendMessage(inputElement, errorContainer) {
                 const userInput = inputElement.value.trim();
                 if (!userInput) return;
-
                 addMessageToChat(userInput, 'user', chatMessages);
                 addMessageToChat(userInput, 'user', modalChatMessages);
-                
                 conversationHistory.push({ role: "user", parts: [{ text: userInput }] });
                 inputElement.value = '';
                 errorContainer.textContent = '';
-                
-                // 创建空的 AI 消息气泡，用于之后填充内容
                 const aiMessageDiv = addMessageToChat(" ", 'ai', chatMessages);
                 const modalAiMessageDiv = addMessageToChat(" ", 'ai', modalChatMessages);
-                aiMessageDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; // 初始显示加载动画
+                aiMessageDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                 modalAiMessageDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
                 try {
-                    // 调用新的流式 sendChatMessage 函数
                     const aiText = await sendChatMessage(conversationHistory, currentModelConfig, aiMessageDiv, modalAiMessageDiv);
-                    
-                    // 流结束后，将完整回复存入历史记录
                     conversationHistory.push({ role: "model", parts: [{ text: aiText }] });
-
                 } catch (error) {
                     console.error("Error handling message:", error);
                     const errorMessage = `抱歉，AI服务暂时遇到问题：${error.message}`;
@@ -1778,15 +1814,11 @@
                     errorContainer.textContent = `AI回复错误：${error.message}`;
                 }
             }
-            // ==========================================================
-            // ^^^^^^  核心修改区域  ^^^^^^
-            // ==========================================================
 
             function updateChatbotUIForModel() {
                 currentModelId = modelSelect.value;
                 currentModelConfig = chatModelConfigs[currentModelId];
                 currentModelDisplay.textContent = `当前模型: ${currentModelConfig.name}`;
-
                 if (currentModelConfig.apiKey.includes("YOUR_")) {
                     const errorMsg = `请先在代码或Vercel环境变量中设置 ${currentModelConfig.name} 的真实 API Key 才能使用！`;
                     chatError.textContent = errorMsg;
@@ -1796,7 +1828,6 @@
                     chatError.textContent = "";
                     modalChatError.textContent = "";
                     [chatInput, chatSendButton, modalChatInput, modalChatSendButton].forEach(el => el.disabled = false);
-
                     if (!currentModelConfig.isInternal && !currentModelConfig.endpointIsProxy) {
                         const warningMsg = "当前选择外网模型且未通过代理，可能需要科学上网。";
                         chatError.textContent = warningMsg;
@@ -1813,7 +1844,6 @@
                 } else {
                     console.error("modelSelect element not found.");
                 }
-
                 chatSendButton.addEventListener('click', () => handleSendMessage(chatInput, chatError));
                 chatInput.addEventListener('keypress', e => e.key === 'Enter' && handleSendMessage(chatInput, chatError));
             } else {
@@ -1822,28 +1852,22 @@
 
             if (openChatModalButton && chatModal && closeChatModalButton && modalChatInput && modalChatSendButton && downloadChatButton && modelSelect) {
                 modelSelect.addEventListener('change', updateChatbotUIForModel);
-
                 openChatModalButton.addEventListener('click', () => {
                     chatModal.classList.add('open');
-                    // 同步聊天内容
                     modalChatMessages.innerHTML = chatMessages.innerHTML;
                     modalChatMessages.scrollTop = modalChatMessages.scrollHeight;
                     modalChatInput.focus();
                 });
-
                 closeChatModalButton.addEventListener('click', () => chatModal.classList.remove('open'));
                 window.addEventListener('click', e => e.target == chatModal && closeChatModalButton.click());
-                
                 modalChatSendButton.addEventListener('click', () => handleSendMessage(modalChatInput, modalChatError));
                 modalChatInput.addEventListener('keypress', e => e.key === 'Enter' && handleSendMessage(modalChatInput, modalChatError));
-                
                 downloadChatButton.addEventListener('click', () => {
                     let chatLog = `## 小八对话记录 (模型: ${currentModelConfig.name})\n\n`;
                     conversationHistory.forEach(msg => {
                         const senderName = msg.role === "user" ? "你" : "小八";
                         chatLog += `### ${senderName}:\n${msg.parts[0].text}\n\n`;
                     });
-
                     const blob = new Blob([chatLog], { type: 'text/markdown;charset=utf-8' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -1862,316 +1886,143 @@
             const closeClassmateDetailModalButton = document.getElementById('closeClassmateDetailModalButton');
             const classmateDetailContentBody = document.getElementById('classmateDetailContentBody');
 
-            // 更新后的同学数据
             const classmatesData = [
                 {
-                    name: "陈一宁",
-                    avatarInitials: "CY", // Chen Yi
-                    studentId: "02",
-                    birthday: "0524",
-                    phone: "18817410363",
-                    email: "(暂未录入)",
-                    message: "无论怎样都要加油哦"
+                    name: "陈一宁", avatarInitials: "CY", studentId: "02", birthday: "0524",
+                    phone: "18817410363", email: "(暂未录入)", message: "无论怎样都要加油哦"
                 },
                 {
-                    name: "蔡家靖",
-                    avatarInitials: "CJ", // Cai Jia
-                    studentId: "09",
-                    birthday: "0811",
-                    phone: "17317300422",
-                    email: "2769571359@qq.com",
-                    message: "祝各位前程似锦"
+                    name: "蔡家靖", avatarInitials: "CJ", studentId: "09", birthday: "0811",
+                    phone: "17317300422", email: "2769571359@qq.com", message: "祝各位前程似锦"
                 },
                 {
-                    name: "徐诚豪",
-                    avatarInitials: "XC", // Xu Cheng
-                    studentId: "34",
-                    birthday: "1025",
-                    phone: "18516171025",
-                    email: "18516171025@163.com",
-                    message: "前程似锦，未来可期"
+                    name: "徐诚豪", avatarInitials: "XC", studentId: "34", birthday: "1025",
+                    phone: "18516171025", email: "18516171025@163.com", message: "前程似锦，未来可期"
                 },
                 {
-                    name: "傅睿绅",
-                    avatarInitials: "FR", // Fu Rui
-                    studentId: "11",
-                    birthday: "0704",
-                    phone: "13122556694",
-                    email: "1574822747@qq.com",
-                    message: "(暂未录入)"
+                    name: "傅睿绅", avatarInitials: "FR", studentId: "11", birthday: "0704",
+                    phone: "13122556694", email: "1574822747@qq.com", message: "(暂未录入)"
                 },
                 {
-                    name: "陈冰羽",
-                    avatarInitials: "CB", // Chen Bing
-                    studentId: "01",
-                    birthday: "1218",
-                    phone: "15317380612",
-                    email: "chenbingyu_1218@163.com",
-                    message: "祝大家前程似锦，所愿皆所得，要记得开心！"
+                    name: "陈冰羽", avatarInitials: "CB", studentId: "01", birthday: "1218",
+                    phone: "15317380612", email: "chenbingyu_1218@163.com", message: "祝大家前程似锦，所愿皆所得，要记得开心！"
                 },
                 {
-                    name: "吴笛",
-                    avatarInitials: "WD", // Wu Di
-                    studentId: "32",
-                    birthday: "0305",
-                    phone: "13816958833",
-                    email: "(暂未录入)",
-                    message: "不断羁绊，无限未来！"
+                    name: "吴笛", avatarInitials: "WD", studentId: "32", birthday: "0305",
+                    phone: "13816958833", email: "(暂未录入)", message: "不断羁绊，无限未来！"
                 },
                 {
-                    name: "金祺峰",
-                    avatarInitials: "JQ", // Jin Qi
-                    studentId: "15",
-                    birthday: "1211",
-                    phone: "15821133028",
-                    email: "m15821133028@163.com",
-                    message: "成为你自己！"
+                    name: "金祺峰", avatarInitials: "JQ", studentId: "15", birthday: "1211",
+                    phone: "15821133028", email: "m15821133028@163.com", message: "成为你自己！"
                 },
                 {
-                    name: "马有宁",
-                    avatarInitials: "MY", // Ma You
-                    studentId: "22",
-                    birthday: "1002",
-                    phone: "13671962954",
-                    email: "chuanliubei114514@qq.com",
-                    message: "事不必难，知难不难，前路已多，艰难坎坷，但犹豫退缩者难至终点。迎难而上，直面挑战，才能活出人生独一无二的精彩"
+                    name: "马有宁", avatarInitials: "MY", studentId: "22", birthday: "1002",
+                    phone: "13671962954", email: "chuanliubei114514@qq.com", message: "事不必难，知难不难，前路已多，艰难坎坷，但犹豫退缩者难至终点。迎难而上，直面挑战，才能活出人生独一无二的精彩"
                 },
                 {
-                    name: "任悠优",
-                    avatarInitials: "RY", // Ren You
-                    studentId: "04",
-                    birthday: "0124",
-                    phone: "18321412048",
-                    email: "Yoyoren7@sina.com",
-                    message: "你镇定了但仍在燃烧，你平稳了却更加浩荡。"
+                    name: "任悠优", avatarInitials: "RY", studentId: "04", birthday: "0124",
+                    phone: "18321412048", email: "Yoyoren7@sina.com", message: "你镇定了但仍在燃烧，你平稳了却更加浩荡。"
                 },
                 {
-                    name: "林宸晞",
-                    avatarInitials: "LC", // Lin Chen
-                    studentId: "19",
-                    birthday: "1114",
-                    phone: "15316770919",
-                    email: "230967560@qq.com",
-                    message: "一切顺利 天天开心"
+                    name: "林宸晞", avatarInitials: "LC", studentId: "19", birthday: "1114",
+                    phone: "15316770919", email: "230967560@qq.com", message: "一切顺利 天天开心"
                 },
                 {
-                    name: "周乐怡",
-                    avatarInitials: "ZY", // Zhou Yue
-                    studentId: "07",
-                    birthday: "0112",
-                    phone: "13901601790",
-                    email: "yukizhoucn@163.com",
-                    message: "喜欢大家，我们无论在哪里都闪闪发光💖"
+                    name: "周乐怡", avatarInitials: "ZY", studentId: "07", birthday: "0112",
+                    phone: "13901601790", email: "yukizhoucn@163.com", message: "喜欢大家，我们无论在哪里都闪闪发光💖"
                 },
                 {
-                    name: "吴子皓",
-                    avatarInitials: "WZ", // Wu Zi
-                    studentId: "33",
-                    birthday: "0815",
-                    phone: "18117079464",
-                    email: "KevinWu0815@163.com",
-                    message: "(暂未录入)"
+                    name: "吴子皓", avatarInitials: "WZ", studentId: "33", birthday: "0815",
+                    phone: "18117079464", email: "KevinWu0815@163.com", message: "(暂未录入)"
                 },
                 {
-                    name: "华霖",
-                    avatarInitials: "HL", // Hua Lin
-                    studentId: "14",
-                    birthday: "1009",
-                    phone: "13671655963",
-                    email: "(暂未录入)",
-                    message: "(暂未录入)"
+                    name: "华霖", avatarInitials: "HL", studentId: "14", birthday: "1009",
+                    phone: "13671655963", email: "(暂未录入)", message: "(暂未录入)"
                 },
                 {
-                    name: "苏彦清",
-                    avatarInitials: "SY", // Su Yan
-                    studentId: "28",
-                    birthday: "0124",
-                    phone: "(暂未录入)",
-                    email: "(暂未录入)",
-                    message: "愿你的未来如诗画，愿你的人生如星辰"
+                    name: "苏彦清", avatarInitials: "SY", studentId: "28", birthday: "0124",
+                    phone: "(暂未录入)", email: "(暂未录入)", message: "愿你的未来如诗画，愿你的人生如星辰"
                 },
                 {
-                    name: "杨昱衡",
-                    avatarInitials: "YY", // Yang Yu
-                    studentId: "35",
-                    birthday: "0702",
-                    phone: "19512131908",
-                    email: "(暂未录入)",
-                    message: "(暂未录入)"
+                    name: "杨昱衡", avatarInitials: "YY", studentId: "35", birthday: "0702",
+                    phone: "19512131908", email: "(暂未录入)", message: "(暂未录入)"
                 },
                 {
-                    name: "周昊锴",
-                    avatarInitials: "ZH", // Zhou Hao
-                    studentId: "40",
-                    birthday: "0313",
-                    phone: "15300506980",
-                    email: "zhouhaokai0313@163.com",
-                    message: "大志戏功名，海斗量福祸。"
+                    name: "周昊锴", avatarInitials: "ZH", studentId: "40", birthday: "0313",
+                    phone: "15300506980", email: "zhouhaokai0313@163.com", message: "大志戏功名，海斗量福祸。"
                 },
                 {
-                    name: "贺润曦",
-                    avatarInitials: "HR", // He Run
-                    studentId: "13",
-                    birthday: "0807",
-                    phone: "17317982853",
-                    email: "(暂未录入)",
-                    message: "直挂云帆济沧海"
+                    name: "贺润曦", avatarInitials: "HR", studentId: "13", birthday: "0807",
+                    phone: "17317982853", email: "(暂未录入)", message: "直挂云帆济沧海"
                 },
                 {
-                    name: "李宜轩",
-                    avatarInitials: "LY", // Li Yi
-                    studentId: "18",
-                    birthday: "0315",
-                    phone: "13916119503",
-                    email: "Li__197@163.com",
-                    message: "宛如奇迹的每分每秒，闪烁光辉的每一刹那，都将会挥洒出意义"
+                    name: "李宜轩", avatarInitials: "LY", studentId: "18", birthday: "0315",
+                    phone: "13916119503", email: "Li__197@163.com", message: "宛如奇迹的每分每秒，闪烁光辉的每一刹那，都将会挥洒出意义"
                 },
                 {
-                    name: "王啸天",
-                    avatarInitials: "WX", // Wang Xiao
-                    studentId: "30",
-                    birthday: "1024",
-                    phone: "18964831142",
-                    email: "wxt20061024@163.com",
-                    message: "所念皆如愿"
+                    name: "王啸天", avatarInitials: "WX", studentId: "30", birthday: "1024",
+                    phone: "18964831142", email: "wxt20061024@163.com", message: "所念皆如愿"
                 },
                 {
-                    name: "阙语曦",
-                    avatarInitials: "QY", // Que Yu
-                    studentId: "03",
-                    birthday: "1218",
-                    phone: "(暂未录入)",
-                    email: "(暂未录入)",
-                    message: "去更远的地方，见更亮的光！"
+                    name: "阙语曦", avatarInitials: "QY", studentId: "03", birthday: "1218",
+                    phone: "(暂未录入)", email: "(暂未录入)", message: "去更远的地方，见更亮的光！"
                 },
                 {
-                    name: "尹嗣涵",
-                    avatarInitials: "YS", // Yin Si
-                    studentId: "37",
-                    birthday: "0804",
-                    // 使用 <br> 标签代替 \n
+                    name: "尹嗣涵", avatarInitials: "YS", studentId: "37", birthday: "0627", // Test date
                     phone: "+86 15921820084 <br> +1 (706)-406-3832",
-                    email: "yinzimike@gmail.com <br> 209993928@qq.com",
-                    message: "沉默地示现。"
+                    email: "yinzimike@gmail.com <br> 209993928@qq.com", message: "沉默地示现。"
                 },
                 {
-                    name: "你！",
-                    avatarInitials: "YOU",
-                    studentId: "你没填问卷！",
-                    birthday: "我不知道！",
-                    phone: "这个也不知道！",
-                    email: "这个还是不知道！",
-                    message: "对于不可言说的，我们只能保持沉默 —— 奥地利哲学家 路德维希 · 维特根斯坦"
+                    name: "俞卓臻", avatarInitials: "YZ", studentId: "38", birthday: "0528",
+                    phone: "18917035967", email: "15618752036@163.com", message: "nothing is impossible"
+                },
+                {
+                    name: "你！", avatarInitials: "YOU", studentId: "你没填问卷！", birthday: "我不知道！",
+                    phone: "这个也不知道！", email: "这个还是不知道！", message: "对于不可言说的，我们只能保持沉默 —— 奥地利哲学家 路德维希 · 维特根斯坦"
                 }
             ];
 
             function populateClassmateCards() {
                 if (!classmateCardsGrid) return;
-
-                const avatarColors = [
-                    'bg-sky-500',
-                    'bg-emerald-500',
-                    'bg-violet-500',
-                    'bg-orange-500',
-                    'bg-rose-500',
-                    'bg-teal-500'
-                ];
-
+                const avatarColors = ['bg-sky-500', 'bg-emerald-500', 'bg-violet-500', 'bg-orange-500', 'bg-rose-500', 'bg-teal-500'];
                 classmateCardsGrid.innerHTML = '';
-
                 classmatesData.forEach((classmate, index) => {
                     const cardDiv = document.createElement('div');
                     cardDiv.className = 'bg-white/70 backdrop-blur-sm p-4 rounded-xl shadow-lg classmate-card enhanced-card-hover text-center flex flex-col items-center justify-center classmate-card-initial';
                     cardDiv.style.transitionDelay = `${index * 50}ms`;
-
-                    // 统一使用名字的最后一个字作为头像内容
                     let avatarContent = classmate.name.slice(-1);
-                    if (classmate.name === "你！") {
-                        avatarContent = "你";
-                    }
-                    
-                    // 从预定义的颜色板中循环取色
+                    if (classmate.name === "你！") avatarContent = "你";
                     const colorClass = avatarColors[index % avatarColors.length];
-                    
-                    const avatarHtml = `
-                        <div class="avatar ${colorClass}">
-                            ${avatarContent}
-                        </div>
-                    `;
+                    const avatarHtml = `<div class="avatar ${colorClass}">${avatarContent}</div>`;
                     const nameHtml = `<h4 class="text-lg font-semibold text-gray-800 mt-2">${classmate.name}</h4>`;
-
                     cardDiv.innerHTML = avatarHtml + nameHtml;
-
-                    // 绑定点击事件，并传入 index 以便弹窗能获取到正确的颜色
                     cardDiv.addEventListener('click', () => showClassmateDetailModal(classmate, index));
                     classmateCardsGrid.appendChild(cardDiv);
                 });
             }
 
-            function showClassmateDetailModal(classmate, index) { // 1. 函数现在接收 index
+            function showClassmateDetailModal(classmate, index) {
                 if (!classmateDetailModal || !classmateDetailContentBody) return;
-
-                // 定义与卡片列表完全相同的颜色板
-                const avatarColors = [
-                    'bg-indigo-500', 'bg-blue-500', 'bg-sky-500', 
-                    'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 
-                    'bg-purple-500', 'bg-teal-500', 'bg-orange-500'
-                ];
-
-                // 2. 弹窗头像也使用名字的最后一个字
+                const avatarColors = ['bg-indigo-500', 'bg-blue-500', 'bg-sky-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-purple-500', 'bg-teal-500', 'bg-orange-500'];
                 let avatarContent = classmate.name.slice(-1);
-                if (classmate.name === "你！") {
-                    avatarContent = "你";
-                }
-
-                // 3. 使用 index 获取与卡片一致的颜色
+                if (classmate.name === "你！") avatarContent = "你";
                 const colorClass = avatarColors[index % avatarColors.length];
-
-                // 生成美化后的弹窗内容
                 classmateDetailContentBody.innerHTML = `
-                <div class="avatar-large ${colorClass}">
-                    ${avatarContent}
-                </div>
-                <h3 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 text-center mb-6">${classmate.name}</h3>
-                
-                <div class="info-line">
-                    <span class="label"><i class="fas fa-id-card"></i>学号:</span>
-                    <div class="data">${classmate.studentId}</div>
-                </div>
-                <div class="info-line">
-                    <span class="label"><i class="fas fa-birthday-cake"></i>生日:</span>
-                    <div class="data">${classmate.birthday}</div>
-                </div>
-                <div class="info-line">
-                    <span class="label"><i class="fas fa-phone"></i>电话:</span>
-                    <div class="data">${classmate.phone}</div>
-                </div>
-                <div class="info-line">
-                    <span class="label"><i class="fas fa-envelope"></i>邮箱:</span>
-                    <div class="data">${classmate.email}</div>
-                </div>
-                
-                <div class="quote mt-6">
-                    <p>"${classmate.message}"</p>
-                </div>
-            `;
+                    <div class="avatar-large ${colorClass}">${avatarContent}</div>
+                    <h3 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 text-center mb-6">${classmate.name}</h3>
+                    <div class="info-line"><span class="label"><i class="fas fa-id-card"></i>学号:</span><div class="data">${classmate.studentId}</div></div>
+                    <div class="info-line"><span class="label"><i class="fas fa-birthday-cake"></i>生日:</span><div class="data">${classmate.birthday}</div></div>
+                    <div class="info-line"><span class="label"><i class="fas fa-phone"></i>电话:</span><div class="data">${classmate.phone}</div></div>
+                    <div class="info-line"><span class="label"><i class="fas fa-envelope"></i>邮箱:</span><div class="data">${classmate.email}</div></div>
+                    <div class="quote mt-6"><p>"${classmate.message}"</p></div>`;
                 classmateDetailModal.classList.add('open');
-            }
-
-            function closeClassmateDetailModal() {
-                if (classmateDetailModal) {
-                    classmateDetailModal.classList.remove('open');
-                }
             }
 
             if (classmateCardsGrid && classmateDetailModal && closeClassmateDetailModalButton) {
                 populateClassmateCards();
-
-                closeClassmateDetailModalButton.addEventListener('click', closeClassmateDetailModal);
+                closeClassmateDetailModalButton.addEventListener('click', () => classmateDetailModal.classList.remove('open'));
                 window.addEventListener('click', (event) => {
-                    if (event.target == classmateDetailModal) {
-                        closeClassmateDetailModal();
-                    }
+                    if (event.target == classmateDetailModal) classmateDetailModal.classList.remove('open');
                 });
             } else {
                 console.error("Classmate section elements not found.");
@@ -2186,9 +2037,7 @@
             const JSONBIN_API_KEY = "$2a$10$xLxeYmOT4sgeNhR9TB7rFe.SrN73KzvX1akvgdam30AI07ksJ1xAm";
             const JSONBIN_BIN_ID  = "683f30358a456b7966a91837";
             const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
-
             const danmakuColors = ['text-red-400', 'text-blue-300', 'text-green-300', 'text-purple-300', 'text-yellow-300', 'text-pink-300', 'text-teal-300', 'text-white'];
-
             let danmakuPool = [];
             let danmakuInterval = null;
 
@@ -2204,37 +2053,20 @@
             }
 
             function startDanmakuLoop() {
-                if (danmakuInterval) {
-                    clearInterval(danmakuInterval);
-                }
-
+                if (danmakuInterval) clearInterval(danmakuInterval);
                 danmakuInterval = setInterval(() => {
-                    if (danmakuPool.length === 0) {
-                        return;
-                    }
-
+                    if (danmakuPool.length === 0) return;
                     const randomIndex = Math.floor(Math.random() * danmakuPool.length);
                     const danmaku = danmakuPool[randomIndex];
-
                     const danmakuItem = document.createElement('div');
-                    danmakuItem.classList.add('danmaku-item');
-                    danmakuItem.classList.add(danmakuColors[Math.floor(Math.random() * danmakuColors.length)]);
+                    danmakuItem.classList.add('danmaku-item', danmakuColors[Math.floor(Math.random() * danmakuColors.length)]);
                     danmakuItem.textContent = danmaku.text;
-                    
                     const containerHeight = danmakuContainer.clientHeight;
                     const itemHeight = 30;
-                    const randomTop = Math.random() * (containerHeight - itemHeight);
-                    danmakuItem.style.top = `${randomTop}px`;
-
-                    const duration = Math.random() * 7 + 8;
-                    danmakuItem.style.animation = `moveRight ${duration}s linear forwards`;
-
+                    danmakuItem.style.top = `${Math.random() * (containerHeight - itemHeight)}px`;
+                    danmakuItem.style.animation = `moveRight ${Math.random() * 7 + 8}s linear forwards`;
                     danmakuContainer.appendChild(danmakuItem);
-
-                    danmakuItem.addEventListener('animationend', () => {
-                        danmakuItem.remove();
-                    });
-
+                    danmakuItem.addEventListener('animationend', () => danmakuItem.remove());
                 }, 1000);
             }
 
@@ -2242,31 +2074,15 @@
                 danmakuRecordsContainer.innerHTML = '<p class="text-gray-500 text-sm text-center">加载历史弹幕...</p>';
                 danmakuRecordsError.textContent = '';
                 try {
-                    const response = await fetch(JSONBIN_URL + '/latest', {
-                        headers: {
-                            'X-Master-Key': JSONBIN_API_KEY,
-                            'X-Bin-Meta': 'false'
-                        }
-                    });
-                    if (!response.ok) {
-                        throw new Error(`Failed to fetch danmaku records: ${response.statusText}`);
-                    }
+                    const response = await fetch(JSONBIN_URL + '/latest', { headers: { 'X-Master-Key': JSONBIN_API_KEY, 'X-Bin-Meta': 'false' } });
+                    if (!response.ok) throw new Error(`Failed to fetch: ${response.statusText}`);
                     let records = await response.json();
-                    
                     danmakuRecordsContainer.innerHTML = '';
                     danmakuPool = [];
-
                     if (records && records.length > 0) {
                         records.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); 
-
                         records.forEach(record => {
-                            const recordHtml = `
-                                <div class="danmaku-record-item">
-                                    <p class="text-gray-800 text-base">${record.text}</p>
-                                    <p class="info">${record.location} | ${new Date(record.timestamp).toLocaleString()}</p>
-                                </div>
-                            `;
-                            danmakuRecordsContainer.innerHTML += recordHtml;
+                            danmakuRecordsContainer.innerHTML += `<div class="danmaku-record-item"><p class="text-gray-800 text-base">${record.text}</p><p class="info">${record.location} | ${new Date(record.timestamp).toLocaleString()}</p></div>`;
                             danmakuPool.push(record);
                         });
                         startDanmakuLoop();
@@ -2275,58 +2091,26 @@
                     }
                 } catch (error) {
                     console.error("Error fetching danmaku records:", error);
-                    danmakuRecordsContainer.innerHTML = '<p class="text-red-500 text-sm text-center">加载历史弹幕失败。</p>';
-                    danmakuRecordsError.textContent = `加载历史弹幕失败: ${error.message}`;
+                    danmakuRecordsContainer.innerHTML = `<p class="text-red-500 text-sm text-center">加载历史弹幕失败: ${error.message}</p>`;
                 }
             }
 
             async function sendDanmaku() {
                 const text = danmakuInput.value.trim();
                 if (!text) return;
-
                 danmakuInput.value = '';
                 danmakuRecordsError.textContent = '';
-
-                const location = await getIpInfo();
-                const timestamp = new Date().toISOString();
-
-                const newDanmaku = { text, location, timestamp };
-
+                const newDanmaku = { text, location: await getIpInfo(), timestamp: new Date().toISOString() };
                 try {
-                    const response = await fetch(JSONBIN_URL + '/latest', {
-                        headers: {
-                            'X-Master-Key': JSONBIN_API_KEY,
-                            'X-Bin-Meta': 'false'
-                        }
-                    });
+                    const response = await fetch(JSONBIN_URL + '/latest', { headers: { 'X-Master-Key': JSONBIN_API_KEY, 'X-Bin-Meta': 'false' } });
                     let currentRecords = [];
-                    if (response.ok) {
-                        currentRecords = await response.json();
-                    } else if (response.status === 404) {
-                        currentRecords = [];
-                    } else {
-                        throw new Error(`Failed to read current records: ${response.statusText}`);
-                    }
-
+                    if (response.ok) currentRecords = await response.json();
+                    else if (response.status !== 404) throw new Error(`Read failed: ${response.statusText}`);
                     currentRecords.push(newDanmaku);
-
-                    const updateResponse = await fetch(JSONBIN_URL, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Master-Key': JSONBIN_API_KEY
-                        },
-                        body: JSON.stringify(currentRecords)
-                    });
-
-                    if (!updateResponse.ok) {
-                        throw new Error(`Failed to update danmaku records: ${updateResponse.statusText}`);
-                    }
-                    
+                    const updateResponse = await fetch(JSONBIN_URL, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY }, body: JSON.stringify(currentRecords) });
+                    if (!updateResponse.ok) throw new Error(`Update failed: ${updateResponse.statusText}`);
                     danmakuPool.push(newDanmaku);
-                    
                     fetchDanmakuRecords();
-
                 } catch (error) {
                     console.error("Error saving danmaku:", error);
                     danmakuRecordsError.textContent = `保存弹幕失败: ${error.message}`;
@@ -2336,11 +2120,7 @@
             if (danmakuSendButton && danmakuInput && danmakuContainer && danmakuRecordsContainer) {
                 fetchDanmakuRecords();
                 danmakuSendButton.addEventListener('click', sendDanmaku);
-                danmakuInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        sendDanmaku();
-                    }
-                });
+                danmakuInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendDanmaku(); });
             } else {
                 console.error("Danmaku UI elements not found.");
             }
@@ -2352,104 +2132,65 @@
             let currentPhotoIndex = 0;
             let msnry;
 
-            // Lightbox elements
             const imageModalOverlay = document.getElementById('imageModalOverlay');
             const closeImageModalButton = document.getElementById('closeImageModalButton');
             const modalImage = document.getElementById('modalImage');
 
-            // Function to get dynamic batch size
-            function getBatchSize() {
-                return window.innerWidth <= 768 ? 8 : 10; // Mobile: 8, Desktop: 10
-            }
+            function getBatchSize() { return window.innerWidth <= 768 ? 8 : 10; }
 
-            // Function to open lightbox
             function openImageModal(imageUrl) {
                 if (imageModalOverlay && modalImage) {
                     modalImage.src = imageUrl;
                     imageModalOverlay.classList.add('open');
-                    document.body.style.overflow = 'hidden'; // Prevent body scroll
+                    document.body.style.overflow = 'hidden';
                 }
             }
-
-            // Function to close lightbox
             function closeImageModal() {
                 if (imageModalOverlay) {
                     imageModalOverlay.classList.remove('open');
-                    // Re-enable body scroll after transition ends
-                    imageModalOverlay.addEventListener('transitionend', function handler() {
+                    imageModalOverlay.addEventListener('transitionend', () => {
                         document.body.style.overflow = '';
-                        imageModalOverlay.removeEventListener('transitionend', handler);
                     }, { once: true });
                 }
             }
+            if (closeImageModalButton) closeImageModalButton.addEventListener('click', closeImageModal);
+            if (imageModalOverlay) imageModalOverlay.addEventListener('click', e => { if (e.target === imageModalOverlay) closeImageModal(); });
+            document.addEventListener('keydown', e => { if (e.key === 'Escape' && imageModalOverlay?.classList.contains('open')) closeImageModal(); });
 
-            // Lightbox event listeners
-            if (closeImageModalButton) {
-                closeImageModalButton.addEventListener('click', closeImageModal);
-            }
-            if (imageModalOverlay) {
-                imageModalOverlay.addEventListener('click', (event) => {
-                    // Only close if clicking on the overlay itself, not the image
-                    if (event.target === imageModalOverlay) {
-                        closeImageModal();
-                    }
-                });
-            }
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape' && imageModalOverlay && imageModalOverlay.classList.contains('open')) {
-                    closeImageModal();
-                }
-            });
-
-
-            // 初始化 Masonry
             if (galleryGrid) {
-                // 移除初始加载信息
                 galleryGrid.querySelector('p')?.remove(); 
-                // 添加 grid-sizer 用于 Masonry 计算列宽
                 const gridSizer = document.createElement('div');
                 gridSizer.className = 'grid-sizer';
                 galleryGrid.appendChild(gridSizer);
-
                 msnry = new Masonry(galleryGrid, {
-                    itemSelector: '.grid-item',
-                    columnWidth: '.grid-sizer',
-                    gutter: 10,
-                    percentPosition: true,
-                    transitionDuration: '0.4s' // Masonry 自身布局动画时间
+                    itemSelector: '.grid-item', columnWidth: '.grid-sizer', gutter: 10, percentPosition: true, transitionDuration: '0.4s'
                 });
             }
 
-            // 从 8ban.txt 文件加载所有图片链接
             async function loadAllPhotos() {
                 if (!galleryGrid) return;
                 try {
                     const response = await fetch('/8ban.txt');
-                    if (!response.ok) {
-                        throw new Error(`无法从加载 8ban.txt (状态: ${response.status})`);
-                    }
+                    if (!response.ok) throw new Error(`无法加载 8ban.txt (状态: ${response.status})`);
                     const textContent = await response.text();
                     allPhotoUrls = textContent.split('\n').filter(line => line.trim() !== '').map(line => {
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(line, 'text/html');
-                        const imgElement = doc.querySelector('img');
-                        return imgElement ? imgElement.src : null;
-                    }).filter(url => url !== null);
+                        return doc.querySelector('img')?.src;
+                    }).filter(url => url);
 
                     if (allPhotoUrls.length > 0) {
                         shuffleAndResetPhotos();
                         displayNextBatchPhotos();
                     } else {
-                        galleryGrid.innerHTML = '<p class="col-span-full text-center text-red-500 py-8">照片列表为空，请检查 8ban.txt 文件内容。</p>';
+                        galleryGrid.innerHTML = '<p class="col-span-full text-center text-red-500 py-8">照片列表为空。</p>';
                     }
-
                 } catch (error) {
                     console.error('加载照片失败:', error);
                     galleryGrid.innerHTML = `<p class="col-span-full text-center text-red-500 py-8">加载照片失败: ${error.message}</p>`;
                 }
             }
 
-            // 打乱图片顺序并重置索引
             function shuffleAndResetPhotos() {
                 shuffledPhotoUrls = [...allPhotoUrls];
                 for (let i = shuffledPhotoUrls.length - 1; i > 0; i--) {
@@ -2459,99 +2200,383 @@
                 currentPhotoIndex = 0;
             }
 
-            // 显示下一批照片
             function displayNextBatchPhotos() {
                 if (!msnry || shuffledPhotoUrls.length === 0) return;
-
-                const batchSize = getBatchSize(); // 获取动态批次大小
+                const batchSize = getBatchSize();
                 const photosToAppend = shuffledPhotoUrls.slice(currentPhotoIndex, currentPhotoIndex + batchSize);
 
                 if (photosToAppend.length === 0) {
                     if (changeButton) {
                         changeButton.textContent = '已显示所有照片，点击重新开始！';
-                        changeButton.classList.add('bg-gray-500', 'hover:bg-gray-600');
-                        changeButton.classList.remove('bg-indigo-500', 'hover:bg-indigo-600');
+                        changeButton.className = changeButton.className.replace(/bg-indigo-500 hover:bg-indigo-600/, 'bg-gray-500 hover:bg-gray-600');
                     }
                     return;
                 }
 
-                const newItems = [];
-                photosToAppend.forEach(imageUrl => {
+                const newItems = photosToAppend.map(imageUrl => {
                     const wrapperDiv = document.createElement('div');
                     wrapperDiv.className = 'grid-item rounded-lg shadow-md card-hover';
-                    
                     const img = document.createElement('img');
                     img.src = imageUrl;
                     img.alt = '班级照片';
                     img.className = 'w-full h-auto object-cover rounded-lg';
-
                     wrapperDiv.appendChild(img);
                     galleryGrid.appendChild(wrapperDiv);
-
-                    newItems.push(wrapperDiv);
-
-                    // 图片加载完成或失败时，触发图片渐入动画
-                    img.onload = () => {
-                        img.classList.add('loaded');
-                    };
-                    img.onerror = () => {
-                        img.alt = '图片加载失败';
-                        img.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%24%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M21%2015V19C21%2019.5304%2020.7893%2020.0391%2020.4142%2020.4142C20.0391%2020.7893%2019.5304%2021%2019%2021H5C4.46957%2021%203.96086%2020.7893%203.58579%2020.4142C3.21071%2020.0391%203%2019.5304%203%2019V5C3%204.46957%203.21071%203.96086%203.58579%203.58579C3.96086%203.21071%204.46957%203%205%203H11%22%20stroke%3D%22%239CA3AF%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M14%2010L21%203%22%20stroke%3D%22%239CA3AF%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M15%203H21V9%22%20stroke%3D%22%239CA3AF%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Ccircle%20cx%3D%228.5%22%20cy%3D%228.5%22%20r%3D%222.5%22%20stroke%3D%22%239CA3AF%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E';
-                        img.classList.add('loaded');
-                    };
-
-                    // 添加点击事件监听器，打开 Lightbox
+                    img.onload = () => img.classList.add('loaded');
+                    img.onerror = () => { img.alt = '图片加载失败'; img.src = '...'; img.classList.add('loaded'); };
                     img.addEventListener('click', () => openImageModal(imageUrl));
+                    return wrapperDiv;
                 });
-
                 currentPhotoIndex += photosToAppend.length;
 
-                // 使用 imagesLoaded 确保所有图片加载完成后再更新 Masonry 布局
-                imagesLoaded(newItems, function() {
+                imagesLoaded(newItems, () => {
                     msnry.appended(newItems);
-                    // Masonry 布局完成后，触发 grid-item 的渐入动画，并添加错时延迟
                     newItems.forEach((item, index) => {
-                        setTimeout(() => {
-                            item.classList.add('masonry-fade-in');
-                        }, index * 80); // 每个项目延迟 80ms
+                        setTimeout(() => item.classList.add('masonry-fade-in'), index * 80);
                     });
                 });
 
-                // 更新按钮文本和样式
                 if (changeButton) {
                     if (currentPhotoIndex < shuffledPhotoUrls.length) {
                         changeButton.textContent = '再来一批！';
-                        changeButton.classList.remove('bg-gray-500', 'hover:bg-gray-600');
-                        changeButton.classList.add('bg-indigo-500', 'hover:bg-indigo-600');
+                        changeButton.className = changeButton.className.replace(/bg-gray-500 hover:bg-gray-600/, 'bg-indigo-500 hover:bg-indigo-600');
                     } else {
                         changeButton.textContent = '已显示所有照片，点击重新开始！';
-                        changeButton.classList.add('bg-gray-500', 'hover:bg-gray-600');
-                        changeButton.classList.remove('bg-indigo-500', 'hover:bg-indigo-600');
+                        changeButton.className = changeButton.className.replace(/bg-indigo-500 hover:bg-indigo-600/, 'bg-gray-500 hover:bg-gray-600');
                     }
                 }
             }
 
-            // 页面加载时执行加载
-            if (galleryGrid) {
-                loadAllPhotos();
-            }
-            
-            // 给“再来一批！”按钮绑定点击事件
+            if (galleryGrid) loadAllPhotos();
             if (changeButton) {
                 changeButton.addEventListener('click', () => {
                     if (currentPhotoIndex >= shuffledPhotoUrls.length) {
-                        // 如果所有照片都已显示，则清空画廊，重新打乱并加载第一批
                         msnry.remove(msnry.getItemElements());
                         msnry.layout();
                         shuffleAndResetPhotos();
-                        displayNextBatchPhotos();
+                    }
+                    displayNextBatchPhotos();
+                });
+            }
+
+            // START: Birthday Celebration Logic (REBUILT & ENHANCED)
+            const birthdayModal = document.getElementById('birthday-celebration-modal');
+            const birthdayModalMessage = document.getElementById('birthday-modal-message');
+            const closeBirthdayModal = document.getElementById('close-birthday-modal');
+            const birthdayTrigger = document.getElementById('birthday-trigger');
+            let birthdayCelebrationShown = false;
+            let birthdayPeopleCache = []; // 用于存储生日同学信息
+
+            // --- 浮动生日帽相关 ---
+            const hatElement = document.getElementById('floating-birthday-hat');
+            hatElement.classList.add('hidden'); // 确保初始隐藏
+            
+            // 物理常量 (可以调整来改变手感)
+            const GRAVITY = 800;          // 重力加速度 (像素/秒^2), 让它掉下来快一点
+            const BOUNCE_FACTOR = 0.65;   // 弹力系数 (0-1)，越高弹得越高
+            const FRICTION = 0.98;        // 空气阻力/地面摩擦
+            const THROW_MULTIPLIER = 1.5; // 抛扔时的速度放大倍数
+            const DRAG_FRICTION = 0.85;   // 拖拽时的阻力感
+
+            // 状态变量
+            let hatX, hatY, hatVx, hatVy; // 位置(px) 和 速度(px/s)
+            let isDragging = false;
+            let dragOffsetX, dragOffsetY;
+            let animationFrameId;
+            let lastPhysicsTime = 0;
+            let hatWidth = 0, hatHeight = 0;
+            let wasDragged = false; // 用于区分点击和拖拽
+
+            function showFloatingHat() {
+                console.log("showFloatingHat: 函数开始执行。");
+                if (!hatElement) {
+                    console.error("showFloatingHat: hatElement 未找到！");
+                    return;
+                }
+
+                // 1. 让元素可见
+                hatElement.classList.remove('hidden');
+                hatElement.style.display = 'block'; // 强制显示
+                hatElement.style.visibility = 'visible'; // 强制可见
+                hatElement.style.opacity = '1'; // 强制不透明
+                console.log("showFloatingHat: 已移除 'hidden' 类并强制显示。当前 classList:", hatElement.classList.value);
+                
+                // 2. 使用 requestAnimationFrame 确保浏览器渲染后我们能获取到正确的尺寸
+                requestAnimationFrame(() => {
+                    hatWidth = hatElement.offsetWidth;
+                    hatHeight = hatElement.offsetHeight;
+
+                    console.log(`showFloatingHat: requestAnimationFrame 回调。帽子实际尺寸: 宽度=${hatWidth}px, 高度=${hatHeight}px`);
+
+                    // 强制设置图标字体
+                    const hatIcon = hatElement.querySelector('.fas.fa-birthday-cake');
+                    if (hatIcon) {
+                        hatIcon.style.fontFamily = '"Font Awesome 6 Free"';
+                        hatIcon.style.fontWeight = '900';
+                        console.log("showFloatingHat: 已通过JS强制设置图标字体。");
                     } else {
-                        displayNextBatchPhotos();
+                        console.error("showFloatingHat: 未找到生日帽图标元素！");
+                    }
+
+                    if (hatWidth === 0 || hatHeight === 0) {
+                        console.error("showFloatingHat: 错误：生日帽尺寸为0，无法显示。请检查CSS或元素内容。");
+                        return;
+                    }
+                    
+                    // 3. 设置初始���态
+                    hatX = window.innerWidth / 2 - hatWidth / 2; // 屏幕中间
+                    hatY = 10; // 临时：直接显示在屏幕顶部可见区域，用于调试
+                    hatVx = (Math.random() - 0.5) * 200; // 给一个小的随机初始水平速度
+                    hatVy = 0;
+                    isDragging = false;
+
+                    // 4. 应用初始位置并启动物理模拟
+                    hatElement.style.transform = 'scale(1) rotate(0deg)';
+                    updateHatPosition();
+                    startPhysicsLoop();
+                    console.log(`showFloatingHat: 生日帽已显示并开始物理模拟，初始位置: (${hatX.toFixed(2)}, ${hatY.toFixed(2)})`);
+                });
+            }
+
+            function hideFloatingHat() {
+                if (!hatElement) return;
+                hatElement.classList.add('hidden');
+                cancelAnimationFrame(animationFrameId); // 停止物理循环
+                console.log("生日帽已隐藏并停止物理模拟。");
+            }
+            
+            function updateHatPosition() {
+                 if (!isDragging) {
+                    const rotation = (hatVx * 0.1) % 360; // 根据水平速度稍微旋转
+                    hatElement.style.transform = `scale(1) rotate(${rotation}deg)`;
+                }
+                hatElement.style.left = `${hatX}px`;
+                hatElement.style.top = `${hatY}px`;
+            }
+
+            function physicsLoop(currentTime) {
+                if (lastPhysicsTime === 0) {
+                    lastPhysicsTime = currentTime;
+                    animationFrameId = requestAnimationFrame(physicsLoop);
+                    return;
+                }
+
+                const deltaTime = (currentTime - lastPhysicsTime) / 1000.0; // 秒
+                lastPhysicsTime = currentTime;
+
+                if (!isDragging) {
+                    // 应用重力
+                    hatVy += GRAVITY * deltaTime;
+
+                    // 应用速度
+                    hatX += hatVx * deltaTime;
+                    hatY += hatVy * deltaTime;
+
+                    // 碰撞检测与反弹
+                    const viewportWidth = window.innerWidth;
+                    const viewportHeight = window.innerHeight;
+
+                    // 左右边界
+                    if (hatX + hatWidth > viewportWidth) {
+                        hatX = viewportWidth - hatWidth;
+                        hatVx *= -BOUNCE_FACTOR;
+                    } else if (hatX < 0) {
+                        hatX = 0;
+                        hatVx *= -BOUNCE_FACTOR;
+                    }
+
+                    // 下边界
+                    if (hatY + hatHeight > viewportHeight) {
+                        hatY = viewportHeight - hatHeight;
+                        hatVy *= -BOUNCE_FACTOR;
+                        hatVx *= FRICTION; // 触地摩擦
+                    }
+                     // 上边界
+                    if (hatY < 0 && hatVy < 0) {
+                        hatY = 0;
+                        hatVy *= -BOUNCE_FACTOR;
+                    }
+                }
+
+                updateHatPosition();
+                animationFrameId = requestAnimationFrame(physicsLoop);
+            }
+
+            function startPhysicsLoop() {
+                cancelAnimationFrame(animationFrameId); // 确保只有一个循环
+                lastPhysicsTime = 0;
+                animationFrameId = requestAnimationFrame(physicsLoop);
+            }
+
+            // --- 拖拽事件处理 ---
+            let lastDragX, lastDragY, dragStartTime;
+            
+            function onDragStart(e) {
+                e.preventDefault();
+                wasDragged = false;
+                isDragging = true;
+                hatElement.classList.add('dragging');
+                hatElement.style.transform = 'scale(1.15)';
+                cancelAnimationFrame(animationFrameId); // 拖拽时暂停物理
+
+                const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+                
+                dragOffsetX = clientX - hatX;
+                dragOffsetY = clientY - hatY;
+
+                lastDragX = hatX;
+                lastDragY = hatY;
+                dragStartTime = performance.now();
+                
+                document.addEventListener('mousemove', onDragMove);
+                document.addEventListener('mouseup', onDragEnd);
+                document.addEventListener('touchmove', onDragMove, { passive: false });
+                document.addEventListener('touchend', onDragEnd);
+            }
+
+            function onDragMove(e) {
+                if (!isDragging) return;
+                wasDragged = true; // 只要移动了就标记为拖拽过
+                e.preventDefault();
+                
+                const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+
+                const newX = clientX - dragOffsetX;
+                const newY = clientY - dragOffsetY;
+                
+                const now = performance.now();
+                const dt = (now - dragStartTime) / 1000.0;
+                
+                // 计算拖拽速度
+                if(dt > 0){
+                    hatVx = (newX - lastDragX) / dt;
+                    hatVy = (newY - lastDragY) / dt;
+                }
+                
+                hatX = newX;
+                hatY = newY;
+                lastDragX = newX;
+                lastDragY = newY;
+                dragStartTime = now;
+                
+                updateHatPosition();
+            }
+
+            function onDragEnd(e) {
+                if (!isDragging) return;
+                isDragging = false;
+                hatElement.classList.remove('dragging');
+                hatElement.style.transform = 'scale(1)';
+
+                // 乘以一个系数，让扔出去更有力
+                hatVx *= THROW_MULTIPLIER;
+                hatVy *= THROW_MULTIPLIER;
+
+                startPhysicsLoop(); // 释放后恢复物理
+
+                document.removeEventListener('mousemove', onDragMove);
+                document.removeEventListener('mouseup', onDragEnd);
+                document.removeEventListener('touchmove', onDragMove);
+                document.removeEventListener('touchend', onDragEnd);
+            }
+            
+            function handleHatClick() {
+                // 如果是拖拽结束，则不触发点击
+                if (wasDragged) {
+                    wasDragged = false;
+                    return;
+                }
+                
+                console.log("生日帽被单击！");
+                if (birthdayPeopleCache.length > 0) {
+                    triggerBirthdayCelebration(birthdayPeopleCache, false); // 重新触发生日祝福, 但不重新检查
+                    hideFloatingHat(); // 隐藏帽子
+                }
+            }
+
+            // --- 生日检查与模态框主逻辑 ---
+            function checkBirthdays() {
+                const today = new Date();
+                const currentMonth = String(today.getMonth() + 1).padStart(2, '0');
+                const currentDay = String(today.getDate()).padStart(2, '0');
+                const todayFormatted = `${currentMonth}${currentDay}`;
+
+                // --- !!! 测试专用: 强制指定一个生日来调试 !!! ---
+                // const todayFormatted = "0627"; 
+                // --- !!! 上线前请务必注释或删除此行 !!! ---
+
+                return classmatesData.filter(c => c.birthday === todayFormatted);
+            }
+
+            function triggerBirthdayCelebration(people, shouldCache = true) {
+                if (!people || people.length === 0 || !birthdayModal) return;
+                
+                if (shouldCache) {
+                    birthdayPeopleCache = people;
+                }
+
+                const names = people.map(p => p.name).join(' 和 ');
+                const message = `祝我们亲爱的同学 **${names}** 生日快乐，天天开心！`;
+                birthdayModalMessage.innerHTML = marked.parse(message);
+                birthdayModal.classList.add('show');
+                birthdayCelebrationShown = true;
+                hideFloatingHat(); // 模态框显示时隐藏帽子
+                
+                // 撒花效果
+                const duration = 5 * 1000, animationEnd = Date.now() + duration;
+                const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 3000 };
+                function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+                const interval = setInterval(() => {
+                    const timeLeft = animationEnd - Date.now();
+                    if (timeLeft <= 0) return clearInterval(interval);
+                    const particleCount = 50 * (timeLeft / duration);
+                    confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+                    confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+                }, 250);
+            }
+
+            if (birthdayTrigger) {
+                const observer = new IntersectionObserver((entries) => {
+                    if (entries[0].isIntersecting && !birthdayCelebrationShown) {
+                        const birthdayPeople = checkBirthdays();
+                        if (birthdayPeople.length > 0) {
+                            triggerBirthdayCelebration(birthdayPeople);
+                            observer.unobserve(birthdayTrigger);
+                        }
+                    }
+                }, { threshold: 1.0 });
+                observer.observe(birthdayTrigger);
+            }
+
+            function closeBirthdayModalAndShowHat() {
+                console.log("关闭生日模态框按钮被点击。");
+                birthdayModal.classList.remove('show');
+                if (birthdayPeopleCache.length > 0) {
+                    setTimeout(showFloatingHat, 100); // 稍作延迟，等待模态框关闭动画
+                }
+            }
+
+            if (closeBirthdayModal) {
+                closeBirthdayModal.addEventListener('click', closeBirthdayModalAndShowHat);
+            }
+
+            if (birthdayModal) {
+                birthdayModal.addEventListener('click', e => {
+                    if (e.target === birthdayModal) {
+                         closeBirthdayModalAndShowHat();
                     }
                 });
-            } else {
-                console.error("Change photos button not found!");
             }
+
+            // --- 为帽子元素绑定事件 ---
+            if (hatElement) {
+                hatElement.addEventListener('mousedown', onDragStart);
+                hatElement.addEventListener('touchstart', onDragStart, { passive: false });
+                hatElement.addEventListener('click', handleHatClick); // 使用click事件来区分拖拽
+            }
+            // END: Birthday Celebration Logic (REBUILT & ENHANCED)
 
             const loadingOverlay = document.getElementById('loading-overlay');
             if (loadingOverlay) {
