@@ -9,11 +9,8 @@
     <script src="./js/marked.min.js"></script>
     <script src="./js/masonry.pkgd.min.js"></script>
     <script src="./js/imagesloaded.pkgd.min.js"></script>
-    <!-- START: Add Confetti Library -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-    <!-- END: Add Confetti Library -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700&display=swap" rel="stylesheet">
-    <!-- 资源预连接，提高加载速度 -->
     <link rel="preconnect" href="https://8ban-1311723413.cos.ap-shanghai.myqcloud.com">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://ipinfo.io">
@@ -1020,6 +1017,9 @@
                         <button id="change-photos-button" class="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-2 rounded-lg transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                             <i class="fas fa-sync-alt mr-2"></i>再来一批！
                         </button>
+                        <button id="upload-photo-button" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                            <i class="fas fa-upload mr-2"></i>我要上传！
+                        </button>
                         <a href="https://pan.quark.cn/s/7655460244b8" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center">
                             <i class="fas fa-cloud-download-alt mr-2"></i>我全都要？
                         </a>
@@ -1238,6 +1238,34 @@
             </div>
         </footer>
 
+        <!-- START: Upload Photo Modal -->
+        <div id="uploadPhotoModal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close" id="closeUploadPhotoModalButton">×</span>
+                <div class="text-center p-4">
+                    <i class="fas fa-cloud-upload-alt text-5xl text-blue-500 mb-4"></i>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">上传图片到OneDrive数据库吧！</h3>
+                    <p class="text-gray-700 text-lg mb-4">请选择您要上传的图片文件：</p>
+                    <form id="uploadForm" class="space-y-4">
+                        <input type="file" id="imageUploadInput" accept="image/*" class="block w-full text-sm text-gray-500
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-full file:border-0
+                            file:text-sm file:font-semibold
+                            file:bg-blue-50 file:text-blue-700
+                            hover:file:bg-blue-100"/>
+                        <input type="text" id="uploaderNameInput" placeholder="您的昵称 (可选)" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                        <textarea id="imageDescriptionInput" placeholder="图片描述 (可选)" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        <button type="submit" id="submitUploadButton" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center w-full">
+                            <i class="fas fa-upload mr-2"></i>开始上传
+                        </button>
+                        <p id="uploadStatus" class="text-sm text-gray-600 mt-2"></p>
+                    </form>
+                    <p class="text-gray-500 text-sm mt-6">上传的图片将仅用于更新浮光掠影。</p>
+                </div>
+            </div>
+        </div>
+        <!-- END: Upload Photo Modal -->
+
         <!-- START: Birthday Celebration Modal (UPDATED) -->
         <div id="birthday-celebration-modal" class="birthday-modal">
             <div class="birthday-modal-content">
@@ -1262,10 +1290,9 @@
             <i class="fas fa-birthday-cake"></i>
         </div>
         <!-- END: Floating Birthday Hat -->
+
    
-        
-   
-    <!-- START: Floating Cat -->
+        <!-- START: Floating Cat -->
         <div id="floating-cat">
             <i class="fas fa-cat"></i>
         </div>
@@ -1284,6 +1311,67 @@
             const mobileMenuButton = document.getElementById('mobileMenuButton');
             const mobileMenu = document.getElementById('mobileMenu');
             const graduationTimer = document.getElementById('graduationTimer'); 
+
+            const uploadForm = document.getElementById('uploadForm');
+            const submitUploadButton = document.getElementById('submitUploadButton');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const imageUploadInput = document.getElementById('imageUploadInput');
+
+            if (uploadForm) {
+                uploadForm.addEventListener('submit', async function(event) {
+                    event.preventDefault(); // 阻止表单默认提交
+
+                    if (!imageUploadInput.files || imageUploadInput.files.length === 0) {
+                        uploadStatus.textContent = '请先选择一个图片文件！';
+                        uploadStatus.style.color = 'red';
+                        return;
+                    }
+
+                    // 禁用按钮并显示加载状态
+                    submitUploadButton.disabled = true;
+                    submitUploadButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>上传中...';
+                    uploadStatus.textContent = '正在准备上传，请稍候...';
+                    uploadStatus.style.color = 'gray';
+
+                    // 1. 创建 FormData 对象
+                    const formData = new FormData();
+                    formData.append('image', imageUploadInput.files[0]); // 'image' 必须与后端 multer.single('image') 的字段名匹配
+                    formData.append('uploaderName', document.getElementById('uploaderNameInput').value);
+                    formData.append('imageDescription', document.getElementById('imageDescriptionInput').value);
+
+                    try {
+                        // 2. 发起 fetch 请求到 /api/upload
+                        const response = await fetch('/api/upload', {
+                            method: 'POST',
+                            body: formData, // 注意：当使用 FormData 时，浏览器会自动设置正确的 Content-Type header，不需要手动设置
+                        });
+
+                        const result = await response.json();
+
+                        // 3. 处理后端的响应
+                        if (response.ok) {
+                            uploadStatus.textContent = `上传成功！文件名: ${result.fileName}`;
+                            uploadStatus.style.color = 'green';
+                            // 可以在成功后做一些事，比如几秒后关闭模态框
+                            setTimeout(() => {
+                                document.getElementById('closeUploadPhotoModalButton').click();
+                            }, 3000);
+                        } else {
+                            // 如果后端返回错误
+                            throw new Error(result.error || '上传失败，未知错误。');
+                        }
+
+                    } catch (error) {
+                        console.error('Upload failed:', error);
+                        uploadStatus.textContent = `上传失败: ${error.message}`;
+                        uploadStatus.style.color = 'red';
+                    } finally {
+                        // 无论成功失败，都重新启用按钮
+                        submitUploadButton.disabled = false;
+                        submitUploadButton.innerHTML = '<i class="fas fa-upload mr-2"></i>开始上传';
+                    }
+                });
+            }
 
             // START: Floating Cat Logic
             // START: Floating Cat Logic
@@ -2462,6 +2550,30 @@
             if (closeImageModalButton) closeImageModalButton.addEventListener('click', closeImageModal);
             if (imageModalOverlay) imageModalOverlay.addEventListener('click', e => { if (e.target === imageModalOverlay) closeImageModal(); });
             document.addEventListener('keydown', e => { if (e.key === 'Escape' && imageModalOverlay?.classList.contains('open')) closeImageModal(); });
+
+            // START: Upload Photo Modal Logic
+            const uploadPhotoButton = document.getElementById('upload-photo-button');
+            const uploadPhotoModal = document.getElementById('uploadPhotoModal');
+            const closeUploadPhotoModalButton = document.getElementById('closeUploadPhotoModalButton');
+
+            if (uploadPhotoButton && uploadPhotoModal && closeUploadPhotoModalButton) {
+                uploadPhotoButton.addEventListener('click', () => {
+                    uploadPhotoModal.classList.add('open');
+                });
+
+                closeUploadPhotoModalButton.addEventListener('click', () => {
+                    uploadPhotoModal.classList.remove('open');
+                });
+
+                window.addEventListener('click', (event) => {
+                    if (event.target == uploadPhotoModal) {
+                        uploadPhotoModal.classList.remove('open');
+                    }
+                });
+            } else {
+                console.error("Upload photo modal elements not found!");
+            }
+            // END: Upload Photo Modal Logic
 
             if (galleryGrid) {
                 galleryGrid.querySelector('p')?.remove(); 
