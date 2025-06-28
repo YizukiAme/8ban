@@ -1246,8 +1246,8 @@
                 <div class="p-4 flex flex-col h-full">
                     <div class="text-center mb-6">
                         <i class="fas fa-cloud-upload-alt text-5xl text-blue-500"></i>
-                        <h3 class="text-2xl font-bold text-gray-800 mt-4">分享你的照片或视频</h3>
-                        <p class="text-gray-600 mt-2">支持多选，上传的内容将用于更新回忆部分。</p>
+                        <h3 class="text-2xl font-bold text-gray-800 mt-4">分享你的影像吧！</h3>
+                        <p class="text-gray-600 mt-2">上传的内容将用于更新回忆。</p>
                     </div>
                     <form id="uploadForm" class="flex flex-col flex-grow space-y-4">
                         <div>
@@ -1260,12 +1260,12 @@
                                 hover:file:bg-blue-100 cursor-pointer"/>
                         </div>
                         <div>
-                            <label for="uploaderNameInput" class="block text-sm font-medium text-gray-700 mb-1">你的昵称 (可选):</label>
-                            <input type="text" id="uploaderNameInput" placeholder="推荐填写，方便大家认识你" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                            <label for="uploaderNameInput" class="block text-sm font-medium text-gray-700 mb-1">你是谁？:</label>
+                            <input type="text" id="uploaderNameInput" placeholder="方便我们认识你！" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
                         </div>
                         <div>
-                            <label for="imageDescriptionInput" class="block text-sm font-medium text-gray-700 mb-1">内容描述 (可选):</label>
-                            <textarea id="imageDescriptionInput" placeholder="简单描述一下这个照片或视频吧" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                            <label for="imageDescriptionInput" class="block text-sm font-medium text-gray-700 mb-1">这是啥？:</label>
+                            <textarea id="imageDescriptionInput" placeholder="简单描述一下这个照片或视频吧~" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                         </div>
                         <div class="flex-grow"></div> <!-- Spacer -->
                         <div class="mt-auto">
@@ -1287,7 +1287,7 @@
                 <div class="text-center">
                     <i class="fas fa-birthday-cake text-5xl text-pink-400 mb-4 animate-bounce"></i>
                     <h2 class="text-3xl font-bold text-gray-800 mb-2">生日快乐！</h2>
-                    <p id="birthday-modal-message" class="text-lg text-gray-600 mb-6">祝我们亲爱的同学</p>
+                    <p id="birthday-modal-message" class="text-lg text-gray-600 mb-6">祝我们亲爱的</p>
                     
                     <!-- NEW: Link to Classmates Section -->
                     <a href="#classmates-area" id="modal-goto-classmates" 
@@ -3008,7 +3008,7 @@
                 }
 
                 const names = people.map(p => p.name).join(' 和 ');
-                const message = `祝我们亲爱的同学 **${names}** 生日快乐，天天开心！`;
+                const message = `祝我们亲爱的 **${names}** 生日快乐，天天开心！`;
                 birthdayModalMessage.innerHTML = marked.parse(message);
                 birthdayModal.classList.add('show');
                 birthdayCelebrationShown = true;
