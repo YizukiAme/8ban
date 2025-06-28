@@ -56,9 +56,13 @@ module.exports = async (req, res) => {
 
   try {
     const data = await client.GetFederationToken(params);
+// 返回一个扁平化的、可以直接给前端SDK使用的对象
     res.status(200).json({
-      credentials: data.Credentials,
-      expiredTime: data.ExpiredTime,
+        TmpSecretId: data.Credentials.TmpSecretId,
+        TmpSecretKey: data.Credentials.TmpSecretKey,
+        Token: data.Credentials.Token, // 注意腾讯云SDK返回的字段是 Token
+        StartTime: data.StartTime, // 加上开始时间，更严谨
+        ExpiredTime: data.ExpiredTime,
     });
   } catch (err) {
     console.error('Error getting federation token:', err);

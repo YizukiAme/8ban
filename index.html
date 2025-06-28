@@ -1320,6 +1320,8 @@
             const uploaderNameInput = document.getElementById('uploaderNameInput');
             const imageDescriptionInput = document.getElementById('imageDescriptionInput');
 
+            const uploadForm = document.getElementById('uploadForm');
+
             if (uploadForm) {
             uploadForm.addEventListener('submit', async function(event) {
                 event.preventDefault();
@@ -1337,9 +1339,7 @@
                 const timestamp = new Date().toISOString().replace(/[:.-]/g, '');
                 const fileExtension = file.name.split('.').pop() || 'jpg';
                 
-                // 优化点1：这里我们只生成纯粹的文件名，不带路径
                 const fileName = `${timestamp}_${uploaderName}_${imageDescription}.${fileExtension}`; 
-                // 优化点2：上传到COS的完整路径(Key)在这里定义
                 const Key = `uploads/${fileName}`;
                 
                 submitUploadButton.disabled = true;
@@ -1347,29 +1347,33 @@
                 uploadStatus.textContent = '';
 
                 try {
-                // 优化点3：向后端请求时，直接传递干净的fileName
                 const credResponse = await fetch('/api/upload', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ fileName: fileName }), // body更清晰了
+                    body: JSON.stringify({ fileName: fileName }),
                 });
 
                 if (!credResponse.ok) {
-                    const errorData = await credResponse.json();
-                    throw new Error(`获取许可失败: ${errorData.details || credResponse.statusText}`);
+                    // 如果后端明确返回错误，先尝试解析JSON
+                    let errorMsg = credResponse.statusText;
+                    try {
+                        const errorData = await credResponse.json();
+                        errorMsg = errorData.details || errorData.error || errorMsg;
+                    } catch(e) { /* 解析失败则使用原始状态文本 */ }
+                    throw new Error(`获取许可失败: ${errorMsg}`);
                 }
-                const { credentials } = await credResponse.json();
+                
+                // 直接获取整个返回的、扁平化的凭证对象
+                const tempCredentials = await credResponse.json();
                 
                 submitUploadButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>上传中 0%';
 
                 const cos = new COS({
                     getAuthorization: function(options, callback) {
+                    // 直接把从后端获取的凭证对象传给回调，并确保 XCosSecurityToken 字段存在
                     callback({
-                        TmpSecretId: credentials.TmpSecretId,
-                        TmpSecretKey: credentials.TmpSecretKey,
-                        XCosSecurityToken: credentials.Token,
-                        StartTime: credentials.StartTime,
-                        ExpiredTime: credentials.ExpiredTime,
+                        ...tempCredentials,
+                        XCosSecurityToken: tempCredentials.Token || tempCredentials.XCosSecurityToken,
                     });
                     }
                 });
@@ -1377,7 +1381,7 @@
                 cos.putObject({
                     Bucket: '8ban-1311723413',
                     Region: 'ap-shanghai',
-                    Key: Key, // 使用我们定义好的完整路径
+                    Key: Key,
                     Body: file,
                     onProgress: function(progressData) {
                     const percent = parseInt(progressData.percent * 100, 10);
