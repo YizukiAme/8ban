@@ -1,9 +1,3 @@
-export const config = {
-    api: {
-        bodyParser: false,
-    },
-};
-
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import tencentcloud from 'tencentcloud-sdk-nodejs';
 
