@@ -9,7 +9,7 @@ const clientConfig = {
     secretId: process.env.TENCENT_SECRET_ID,
     secretKey: process.env.TENCENT_SECRET_KEY,
   },
-  region: '', // STS服务是全局的，不需要特定地域
+  region: process.env.COS_REGION, 
   profile: {
     httpProfile: {
       endpoint: 'sts.tencentcloudapi.com',
