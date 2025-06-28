@@ -890,6 +890,7 @@
         }
         /* END: Floating Cat Styles */
     </style>
+    <script src="https://unpkg.com/cos-js-sdk-v5/dist/cos-js-sdk-v5.min.js"></script>
 </head>
 <body class="min-h-screen">
 
@@ -1316,61 +1317,112 @@
             const submitUploadButton = document.getElementById('submitUploadButton');
             const uploadStatus = document.getElementById('uploadStatus');
             const imageUploadInput = document.getElementById('imageUploadInput');
+            const uploaderNameInput = document.getElementById('uploaderNameInput');
+            const imageDescriptionInput = document.getElementById('imageDescriptionInput');
 
+            // 只有在找到了表单元素后才执行绑定操作
             if (uploadForm) {
-                uploadForm.addEventListener('submit', async function(event) {
-                    event.preventDefault(); // 阻止表单默认提交
+            uploadForm.addEventListener('submit', async function(event) {
+                event.preventDefault(); // 阻止表单的默认提交行为
 
-                    if (!imageUploadInput.files || imageUploadInput.files.length === 0) {
-                        uploadStatus.textContent = '请先选择一个图片文件！';
-                        uploadStatus.style.color = 'red';
-                        return;
-                    }
+                if (!imageUploadInput.files || imageUploadInput.files.length === 0) {
+                uploadStatus.textContent = '请先选择一个图片文件！';
+                uploadStatus.style.color = 'red';
+                return;
+                }
 
-                    // 禁用按钮并显示加载状态
-                    submitUploadButton.disabled = true;
-                    submitUploadButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>上传中...';
-                    uploadStatus.textContent = '正在准备上传，请稍候...';
-                    uploadStatus.style.color = 'gray';
+                const file = imageUploadInput.files[0];
+                // 清理一下用户输入，防止奇怪的字符
+                const uploaderName = (uploaderNameInput.value || '匿名').replace(/[^\w\u4E00-\u9FA5-]/g, '');
+                const imageDescription = (imageDescriptionInput.value || '无描述').replace(/[^\w\u4E00-\u9FA5-]/g, '');
 
-                    // 1. 创建 FormData 对象
-                    const formData = new FormData();
-                    formData.append('image', imageUploadInput.files[0]); // 'image' 必须与后端 multer.single('image') 的字段名匹配
-                    formData.append('uploaderName', document.getElementById('uploaderNameInput').value);
-                    formData.append('imageDescription', document.getElementById('imageDescriptionInput').value);
+                const timestamp = new Date().toISOString().replace(/[:.-]/g, '');
+                const fileExtension = file.name.split('.').pop() || 'jpg';
+                
+                // --- 关键部分：定义上传路径 ---
+                // 这里我们定义了文件在COS中保存的完整路径，确保它在 'uploads/' 目录下。
+                // 这与我们后端 policy 里的规则是互相匹配的。
+                const key = `uploads/${timestamp}_${uploaderName}_${imageDescription}.${fileExtension}`; 
+                
+                // 更新UI，禁用按钮
+                submitUploadButton.disabled = true;
+                submitUploadButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>正在获取许可...';
+                uploadStatus.textContent = '';
 
-                    try {
-                        // 2. 发起 fetch 请求到 /api/upload
-                        const response = await fetch('/api/upload', {
-                            method: 'POST',
-                            body: formData, // 注意：当使用 FormData 时，浏览器会自动设置正确的 Content-Type header，不需要手动设置
-                        });
+                try {
+                // 第1步：请求我们的后端API，获取临时密钥
+                const credResponse = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    // 把我们要上传的文件完整路径(key)发给后端，让它签发对应的许可
+                    body: JSON.stringify({ fileName: key.replace('uploads/', '') }),
+                });
 
-                        const result = await response.json();
+                if (!credResponse.ok) {
+                    const errorData = await credResponse.json();
+                    throw new Error(`获取许可失败: ${errorData.details || credResponse.statusText}`);
+                }
+                const { credentials } = await credResponse.json();
+                
+                submitUploadButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>上传中 0%';
 
-                        // 3. 处理后端的响应
-                        if (response.ok) {
-                            uploadStatus.textContent = `上传成功！文件名: ${result.fileName}`;
-                            uploadStatus.style.color = 'green';
-                            // 可以在成功后做一些事，比如几秒后关闭模态框
-                            setTimeout(() => {
-                                document.getElementById('closeUploadPhotoModalButton').click();
-                            }, 3000);
-                        } else {
-                            // 如果后端返回错误
-                            throw new Error(result.error || '上传失败，未知错误。');
-                        }
-
-                    } catch (error) {
-                        console.error('Upload failed:', error);
-                        uploadStatus.textContent = `上传失败: ${error.message}`;
-                        uploadStatus.style.color = 'red';
-                    } finally {
-                        // 无论成功失败，都重新启用按钮
-                        submitUploadButton.disabled = false;
-                        submitUploadButton.innerHTML = '<i class="fas fa-upload mr-2"></i>开始上传';
+                // 第2步：创建COS SDK实例
+                const cos = new COS({
+                    // getAuthorization 是一个函数，SDK在需要签名时会调用它
+                    getAuthorization: function(options, callback) {
+                    // 直接返回从我们后端获取的临时密钥信息
+                    callback({
+                        TmpSecretId: credentials.TmpSecretId,
+                        TmpSecretKey: credentials.TmpSecretKey,
+                        XCosSecurityToken: credentials.Token,
+                        StartTime: credentials.StartTime, // 腾讯云STS v2.0返回的开始时间
+                        ExpiredTime: credentials.ExpiredTime, // 腾讯云STS v2.0返回的过期时间
+                    });
                     }
                 });
+
+                // 第3步：执行上传
+                cos.putObject({
+                    Bucket: '8ban-1311723413',
+                    Region: 'ap-shanghai',
+                    Key: key, // 上传到COS的完整路径
+                    Body: file, // 要上传的文件对象
+                    onProgress: function(progressData) {
+                    const percent = parseInt(progressData.percent * 100, 10);
+                    submitUploadButton.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>上传中 ${percent}%`;
+                    uploadStatus.textContent = `进度: ${percent}% (${(progressData.loaded / 1024 / 1024).toFixed(2)}MB / ${(progressData.total / 1024 / 1024).toFixed(2)}MB)`;
+                    }
+                }, function(err, data) {
+                    // 上传完成后的回调函数
+                    submitUploadButton.disabled = false;
+                    submitUploadButton.innerHTML = '<i class="fas fa-upload mr-2"></i>开始上传';
+
+                    if (err) {
+                    console.error('COS upload error:', err);
+                    uploadStatus.textContent = `上传失败: ${err.message || '请检查控制台'}`;
+                    uploadStatus.style.color = 'red';
+                    } else {
+                    console.log('Upload success:', data);
+                    uploadStatus.textContent = `上传成功！感谢你的分享！`;
+                    uploadStatus.style.color = 'green';
+                    
+                    setTimeout(() => {
+                        document.getElementById('closeUploadPhotoModalButton').click();
+                        // 重置状态
+                        uploadForm.reset();
+                        uploadStatus.textContent = '';
+                    }, 2000);
+                    }
+                });
+
+                } catch (error) {
+                console.error('Upload process failed:', error);
+                uploadStatus.textContent = `上传失败: ${error.message}`;
+                uploadStatus.style.color = 'red';
+                submitUploadButton.disabled = false;
+                submitUploadButton.innerHTML = '<i class="fas fa-upload mr-2"></i>开始上传';
+                }
+            });
             }
 
             // START: Floating Cat Logic
