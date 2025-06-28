@@ -1320,10 +1320,9 @@
             const uploaderNameInput = document.getElementById('uploaderNameInput');
             const imageDescriptionInput = document.getElementById('imageDescriptionInput');
 
-            // 只有在找到了表单元素后才执行绑定操作
             if (uploadForm) {
             uploadForm.addEventListener('submit', async function(event) {
-                event.preventDefault(); // 阻止表单的默认提交行为
+                event.preventDefault();
 
                 if (!imageUploadInput.files || imageUploadInput.files.length === 0) {
                 uploadStatus.textContent = '请先选择一个图片文件！';
@@ -1332,30 +1331,27 @@
                 }
 
                 const file = imageUploadInput.files[0];
-                // 清理一下用户输入，防止奇怪的字符
                 const uploaderName = (uploaderNameInput.value || '匿名').replace(/[^\w\u4E00-\u9FA5-]/g, '');
                 const imageDescription = (imageDescriptionInput.value || '无描述').replace(/[^\w\u4E00-\u9FA5-]/g, '');
 
                 const timestamp = new Date().toISOString().replace(/[:.-]/g, '');
                 const fileExtension = file.name.split('.').pop() || 'jpg';
                 
-                // --- 关键部分：定义上传路径 ---
-                // 这里我们定义了文件在COS中保存的完整路径，确保它在 'uploads/' 目录下。
-                // 这与我们后端 policy 里的规则是互相匹配的。
-                const key = `uploads/${timestamp}_${uploaderName}_${imageDescription}.${fileExtension}`; 
+                // 优化点1：这里我们只生成纯粹的文件名，不带路径
+                const fileName = `${timestamp}_${uploaderName}_${imageDescription}.${fileExtension}`; 
+                // 优化点2：上传到COS的完整路径(Key)在这里定义
+                const Key = `uploads/${fileName}`;
                 
-                // 更新UI，禁用按钮
                 submitUploadButton.disabled = true;
                 submitUploadButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>正在获取许可...';
                 uploadStatus.textContent = '';
 
                 try {
-                // 第1步：请求我们的后端API，获取临时密钥
+                // 优化点3：向后端请求时，直接传递干净的fileName
                 const credResponse = await fetch('/api/upload', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    // 把我们要上传的文件完整路径(key)发给后端，让它签发对应的许可
-                    body: JSON.stringify({ fileName: key.replace('uploads/', '') }),
+                    body: JSON.stringify({ fileName: fileName }), // body更清晰了
                 });
 
                 if (!credResponse.ok) {
@@ -1366,34 +1362,29 @@
                 
                 submitUploadButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>上传中 0%';
 
-                // 第2步：创建COS SDK实例
                 const cos = new COS({
-                    // getAuthorization 是一个函数，SDK在需要签名时会调用它
                     getAuthorization: function(options, callback) {
-                    // 直接返回从我们后端获取的临时密钥信息
                     callback({
                         TmpSecretId: credentials.TmpSecretId,
                         TmpSecretKey: credentials.TmpSecretKey,
                         XCosSecurityToken: credentials.Token,
-                        StartTime: credentials.StartTime, // 腾讯云STS v2.0返回的开始时间
-                        ExpiredTime: credentials.ExpiredTime, // 腾讯云STS v2.0返回的过期时间
+                        StartTime: credentials.StartTime,
+                        ExpiredTime: credentials.ExpiredTime,
                     });
                     }
                 });
 
-                // 第3步：执行上传
                 cos.putObject({
                     Bucket: '8ban-1311723413',
                     Region: 'ap-shanghai',
-                    Key: key, // 上传到COS的完整路径
-                    Body: file, // 要上传的文件对象
+                    Key: Key, // 使用我们定义好的完整路径
+                    Body: file,
                     onProgress: function(progressData) {
                     const percent = parseInt(progressData.percent * 100, 10);
                     submitUploadButton.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>上传中 ${percent}%`;
                     uploadStatus.textContent = `进度: ${percent}% (${(progressData.loaded / 1024 / 1024).toFixed(2)}MB / ${(progressData.total / 1024 / 1024).toFixed(2)}MB)`;
                     }
                 }, function(err, data) {
-                    // 上传完成后的回调函数
                     submitUploadButton.disabled = false;
                     submitUploadButton.innerHTML = '<i class="fas fa-upload mr-2"></i>开始上传';
 
@@ -1408,7 +1399,6 @@
                     
                     setTimeout(() => {
                         document.getElementById('closeUploadPhotoModalButton').click();
-                        // 重置状态
                         uploadForm.reset();
                         uploadStatus.textContent = '';
                     }, 2000);
