@@ -1848,27 +1848,34 @@
                     createFishTrail(clientX, clientY);
                 };
 
-                const handleCatEnd = () => {
-                    if (isDraggingCat) {
-                        isDraggingCat = false;
-                        floatingCat.classList.remove('dragging');
-                        // Velocity is already calculated in handleCatMove, physics mode is active
-                        // Just let the animateCat loop take over
-                    }
-                };
+                const handleCatEnd = (e) => {
+                    if (!isDraggingCat) return;
 
-                const handleCatClick = (e) => {
-                    // This function is called after handleCatEnd on mouseup, so isDraggingCat will be false.
-                    // We distinguish a click from a drag-release by checking the cat's velocity.
+                    isDraggingCat = false;
+                    floatingCat.classList.remove('dragging');
+
+                    // Check if it was a click/tap and not a throw by checking velocity
                     if (Math.abs(vx) > 2 || Math.abs(vy) > 2) {
-                        return; // Don't trigger click effects on a throw
+                        return; // It was a throw, let physics handle it
                     }
 
+                    // It's a click/tap, so trigger the effects
                     if (floatingCat.classList.contains('active')) {
-                        // Pause AI movement briefly on click
+                        // Pause AI movement briefly
                         if (catMode === 'AI') {
                             aiState = 'PAUSED';
                             aiStateTimer = 120; // Pause for 2 seconds
+                        }
+
+                        // Get coordinates for effects from either mouse or touch event
+                        let clientX, clientY;
+                        if (e.type === 'touchend' || e.type === 'touchcancel') {
+                            const touch = e.changedTouches[0];
+                            clientX = touch.clientX;
+                            clientY = touch.clientY;
+                        } else { // mouseup
+                            clientX = e.clientX;
+                            clientY = e.clientY;
                         }
 
                         // Angry reaction
@@ -1892,8 +1899,8 @@
                                 angryFace.addEventListener('animationend', () => angryFace.remove());
                             }
                         } else { // Confetti and Heart Particles
-                            const x = e.clientX / window.innerWidth;
-                            const y = e.clientY / window.innerHeight;
+                            const x = clientX / window.innerWidth;
+                            const y = clientY / window.innerHeight;
                             confetti({ particleCount: 100, spread: 70, origin: { x: x, y: y }, colors: ['#f472b6', '#8b5cf6', '#3b82f6', '#ef4444', '#f97316'] });
                             // Heart particles for "happy" expression
                             confetti({
@@ -1920,7 +1927,6 @@
                 document.addEventListener('touchmove', handleCatMove, { passive: false });
                 document.addEventListener('mouseup', handleCatEnd);
                 document.addEventListener('touchend', handleCatEnd);
-                floatingCat.addEventListener('click', handleCatClick);
 
                 if (mainContentWrapper) {
                     mainContentWrapper.addEventListener('scroll', () => {
