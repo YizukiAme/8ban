@@ -5,4 +5,8 @@ module.exports = {
     extend: {},
   },
   plugins: [],
+  safelist: [
+  'fas', 'fa-sync-alt', 'fa-upload', 'fa-cloud-download-alt', 
+  'fa-arrows-rotate', 'fa-solid'
+],
 }

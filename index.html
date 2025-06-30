@@ -501,7 +501,7 @@
             color: white;
             
             /* --- 字体与居中最终优化 --- */
-            font-family: 'Dengxian', 'Microsoft YaHei', sans-serif; /* 1. 更换为更可靠、现代的“等线”字体 */
+            font-family: 'Dengxian', 'Microsoft YaHei', sans-serif; /* 1. 更换为更可靠、现代的"等线"字体 */
             font-size: 3rem; /* 保持大气字号 (48px) */
             /* 2. 移除 line-height 和 padding-top，完全信赖 Flexbox 的 align-items: center 来实现完美居中 */
 
@@ -885,6 +885,30 @@
             transition: none; /* Disable transition during drag */
         }
         /* END: Floating Cat Styles */
+
+        /* START: Angry Cat Explosion Styles */
+        .angry-cat-face {
+            position: fixed;
+            font-size: 24px;
+            color: #ef4444; /* red-500 */
+            pointer-events: none;
+            z-index: 1501; /* Above the cat */
+            user-select: none;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            animation: angry-cat-fly-out 1.2s cubic-bezier(0.1, 0.8, 0.7, 1) forwards;
+        }
+
+        @keyframes angry-cat-fly-out {
+            0% {
+                transform: scale(0.5);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.5) translate(var(--tx), var(--ty)) rotate(var(--rot));
+                opacity: 0;
+            }
+        }
+        /* END: Angry Cat Explosion Styles */
     </style>
     <script src="https://unpkg.com/cos-js-sdk-v5/dist/cos-js-sdk-v5.min.js"></script>
 </head>
@@ -1632,14 +1656,42 @@
             // Function to handle confetti on click
             const handleCatClick = (e) => {
                 if (!isDraggingCat && floatingCat.classList.contains('active')) { // Only trigger if not dragging and active
-                    const x = e.clientX / window.innerWidth;
-                    const y = e.clientY / window.innerHeight;
-                    confetti({
-                        particleCount: 100,
-                        spread: 70,
-                        origin: { x: x, y: y },
-                        colors: ['#f472b6', '#8b5cf6', '#3b82f6', '#ef4444', '#f97316']
-                    });
+                    
+                    // 5% chance to be angry, otherwise normal confetti
+                    if (Math.random() < 0.05) {
+                        const catRect = floatingCat.getBoundingClientRect();
+                        const originX = catRect.left + catRect.width / 2;
+                        const originY = catRect.top + catRect.height / 2;
+
+                        for (let i = 0; i < 20; i++) {
+                            const angryFace = document.createElement('i');
+                            angryFace.classList.add('fas', 'fa-cat', 'angry-cat-face');
+                            angryFace.textContent = '😠'; // Use an emoji for the face
+                            angryFace.style.left = `${originX}px`;
+                            angryFace.style.top = `${originY}px`;
+                            
+                            const angle = Math.random() * 360;
+                            const distance = Math.random() * 150 + 50;
+                            const rotation = Math.random() * 720 - 360;
+
+                            angryFace.style.setProperty('--tx', `${Math.cos(angle * Math.PI / 180) * distance}px`);
+                            angryFace.style.setProperty('--ty', `${Math.sin(angle * Math.PI / 180) * distance}px`);
+                            angryFace.style.setProperty('--rot', `${rotation}deg`);
+
+                            document.body.appendChild(angryFace);
+                            angryFace.addEventListener('animationend', () => angryFace.remove());
+                        }
+
+                    } else {
+                        const x = e.clientX / window.innerWidth;
+                        const y = e.clientY / window.innerHeight;
+                        confetti({
+                            particleCount: 100,
+                            spread: 70,
+                            origin: { x: x, y: y },
+                            colors: ['#f472b6', '#8b5cf6', '#3b82f6', '#ef4444', '#f97316']
+                        });
+                    }
                 }
             };
 
